@@ -2,13 +2,13 @@
 # Documentation: https://docs.netlify.com/configure-builds/file-based-configuration/
 
 [build]
-# Build command for Nuxt with Prisma
-command = "npx prisma generate && npx prisma db push && npx prisma db seed && npm run build"
+# Build command - skip DB operations during build, handle in runtime
+command = "npx prisma generate && npm run build"
 # Publish directory (Nuxt outputs to .output/public)
 publish = ".output/public"
 
-# Functions directory for Nuxt server routes (production only)
-functions = ".output/server"
+# Functions directory - Nitro generates in .netlify/functions-internal for Netlify
+functions = ".netlify/functions-internal"
 
 [build.environment]
 # Node version for build

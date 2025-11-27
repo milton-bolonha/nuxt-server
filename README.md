@@ -83,6 +83,34 @@ Após executar, acesse:
 -   **Aplicação**: http://127.0.0.1:3001
 -   **DevTools**: Shift + Alt + D no navegador
 
+## 🚀 Deploy no Netlify
+
+O projeto está configurado para deploy automático no Netlify:
+
+### Arquivos de Configuração:
+- `netlify.toml` - Configurações de build e deploy
+- `.output/public` - Arquivos estáticos gerados
+- `.netlify/functions-internal` - Funções server-side
+
+### Processo de Build:
+1. Gera cliente Prisma
+2. Build do Nuxt (client + server)
+3. Deploy automático no Netlify
+
+### Banco de Dados:
+- SQLite local para desenvolvimento
+- Inicialização automática no runtime do Netlify
+- Dados populados automaticamente na primeira execução
+
+### Variáveis de Ambiente no Netlify:
+Configure no painel do Netlify:
+```
+DATABASE_URL=file:./prisma/dev.db
+TOKEN_SECRET=your-token-here
+SESSION_SECRET=your-session-here
+ALLOWED_ORIGINS=https://your-domain.netlify.app
+```
+
 ## 📝 Desenvolvimento
 
 1. Clone o repositório
