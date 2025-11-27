@@ -1,21 +1,5 @@
 import { ref, computed } from 'vue'
-
-export interface CaseData {
-  id: string
-  title: string
-  description: string
-  facts: string
-  difficulty: 'Easy' | 'Medium' | 'Hard'
-  statute?: string
-  type: 'criminal' | 'civil'
-  roles: {
-    [key: string]: {
-      objectives: string[]
-      key_arguments: string[]
-      key_decisions: string[]
-    }
-  }
-}
+import type { CaseData } from '~/utils/cases'
 
 export interface Message {
   id: string
@@ -28,7 +12,7 @@ export interface Message {
 export function useTrialState() {
   const currentCase = ref<CaseData | null>(null)
   const playerRole = ref<string | null>(null)
-  const caseType = ref<'criminal' | 'civil' | null>(null)
+  const caseType = ref<string | null>(null) // Changed to string to match CaseData interface
   const isActive = ref(false)
   const isSinglePlayer = ref(false)
   
@@ -93,7 +77,7 @@ export function useTrialState() {
     return html
   })
 
-  function startTrial(caseData: CaseData, role: string, type: 'criminal' | 'civil') {
+  function startTrial(caseData: CaseData, role: string, type: string) {
     currentCase.value = caseData
     playerRole.value = role
     caseType.value = type

@@ -33,3 +33,6 @@ scripts/backups/
 *.sql.gz
 *.sql.zip
 *.db.backup
+
+# Local Netlify folder
+.netlify
