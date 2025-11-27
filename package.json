@@ -1,0 +1,61 @@
+{
+    "name": "nuxt_nusalegal",
+    "type": "module",
+    "version": "0.6.0",
+    "private": true,
+    "scripts": {
+        "all": "start.bat",
+        "build": "nuxt build",
+        "dev": "dev.bat",
+        "start": "start.bat",
+        "startapp": "start.bat",
+        "stop": "stop.bat",
+        "generate": "nuxt generate",
+        "preview": "nuxt preview",
+        "postinstall": "nuxt prepare",
+        "db:studio": "prisma studio",
+        "db:studio:prod": "dotenv -e .env.production -- prisma studio",
+        "db:generate": "prisma generate",
+        "db:migrate": "prisma migrate dev",
+        "db:migrate:prod": "dotenv -e .env.production -- prisma migrate deploy",
+        "db:push": "prisma db push",
+        "db:seed": "prisma db seed",
+        "db:seed:prod": "dotenv -e .env.production -- prisma db seed"
+    },
+    "prisma": {
+        "seed": "tsx prisma/seed.ts"
+    },
+    "dependencies": {
+        "@pinia/nuxt": "^0.11.2",
+        "@prisma/client": "^6.18.0",
+        "@sentry/vue": "^7.119.0",
+        "@tailwindcss/postcss": "^4.1.17",
+        "@tailwindcss/vite": "^4.1.14",
+        "@tavily/core": "^0.5.13",
+        "@tiptap/extension-link": "^3.8.0",
+        "@tiptap/starter-kit": "^3.8.0",
+        "@tiptap/vue-3": "^3.8.0",
+        "@upstash/redis": "^1.35.6",
+        "ably": "^2.14.0",
+        "autoprefixer": "^10.4.22",
+        "axios": "^1.13.0",
+        "dotenv": "^17.2.3",
+        "lucide-vue-next": "^0.545.0",
+        "noblox.js": "^6.2.0",
+        "nuxt": "^4.1.3",
+        "openai": "^6.9.1",
+        "pinia": "^3.0.3",
+        "prisma": "^6.18.0",
+        "tailwindcss": "^4.1.14",
+        "vue": "^3.5.22",
+        "vue-router": "^4.5.1",
+        "winston": "^3.18.3"
+    },
+    "devDependencies": {
+        "@types/node": "^24.7.2",
+        "daisyui": "^5.2.3",
+        "dotenv-cli": "^10.0.0",
+        "netlify-cli": "^23.11.1",
+        "tsx": "^4.20.6"
+    }
+}

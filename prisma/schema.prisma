@@ -1,0 +1,251 @@
+// nUSA Legal - Prisma Schema
+// Database schema for all legal content
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite" // Local dev uses SQLite, change to "postgresql" for Railway migrations
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// BILLS & LEGISLATION
+// ============================================
+
+// Congressional and City Council Bills
+model Bill {
+  id          String   @id @default(cuid())
+  number      String   @unique // e.g., "H.R. 1", "S. 123"
+  type        String   // hr, s, hjres, sjres, sres, hconres, sconres
+  category    String   @default("congress") // congress or city-council
+  description String
+  pdfPath     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([type])
+  @@index([category])
+}
+
+// ============================================
+// LAWS
+// ============================================
+
+// Federal Laws (U.S. Code)
+model Law {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  uscode      String?  // e.g., "18 U.S.C. § 1001"
+  category    String   // criminal, civil, administrative, etc.
+  content     String?
+  pdfPath     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([category])
+  @@index([uscode])
+}
+
+// Presidential Executive Orders
+model ExecutiveOrder {
+  id          String   @id @default(cuid())
+  number      String   @unique // e.g., "14001"
+  title       String
+  description String?
+  pdfPath     String?
+  issuedDate  DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([number])
+}
+
+// D.C. Municipal Laws
+model MunicipalLaw {
+  id          String   @id @default(cuid())
+  code        String   @unique // e.g., "22-4501"
+  title       String
+  description String?
+  category    String?
+  pdfPath     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([category])
+}
+
+// ============================================
+// RESOURCES
+// ============================================
+
+// Legal Term Definitions
+model Definition {
+  id          String   @id @default(cuid())
+  title       String   @unique
+  description String
+  category    String   @default("general") // general, criminal, civil, etc.
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([category])
+}
+
+// VIP User Badges
+model VIP {
+  id        String   @id @default(cuid())
+  userId    String   @unique // Roblox user ID
+  title     String   // Badge title
+  reason    String?  // Why they have VIP status
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([userId])
+}
+
+// ============================================
+// COURT SYSTEM
+// ============================================
+
+// Supreme Court Cases
+model CourtCase {
+  id          String   @id @default(cuid())
+  name        String   @unique // e.g., "Miranda v. Arizona"
+  citation    String?  // e.g., "384 U.S. 436 (1966)"
+  year        Int?
+  description String?
+  ruling      String?
+  pdfPath     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([year])
+}
+
+// Federal Rules (FRCP/FRCMP)
+model FederalRule {
+  id          String   @id @default(cuid())
+  number      String   // e.g., "12(b)(6)"
+  type        String   // frcp, frcmp, fre, etc.
+  title       String
+  description String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@unique([number, type])
+  @@index([type])
+}
+
+// Court Procedures
+model CourtProcedure {
+  id          String   @id @default(cuid())
+  title       String   @unique
+  description String
+  category    String   // criminal, civil, appeals, etc.
+  steps       String?  // JSON array of steps
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([category])
+}
+
+// ============================================
+// GOVERNMENT OFFICES
+// ============================================
+
+// Office Descriptions
+model Office {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String
+  category    String   // executive, legislative, judicial, agency
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([category])
+}
+
+// ============================================
+// FILES & MEDIA
+// ============================================
+
+// Uploaded Files (PDFs, images, etc.)
+model File {
+  id          String   @id @default(cuid())
+  title       String
+  fileUrl     String   // URL to file in cloud storage
+  fileType    String   // pdf, image, etc.
+  category    String   // bills, laws, cases, etc.
+  description String?
+  uploadedBy  String?  // User ID who uploaded
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([category])
+  @@index([fileType])
+}
+
+// ============================================
+// CONSTITUTION
+// ============================================
+
+// Constitution Articles
+model ConstitutionArticle {
+  id          String   @id @default(cuid())
+  number      Int      @unique // 1, 2, 3, etc.
+  title       String
+  content     String
+  summary     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// Constitution Amendments
+model ConstitutionAmendment {
+  id          String   @id @default(cuid())
+  number      Int      @unique // 1, 2, 3, etc.
+  title       String
+  content     String
+  summary     String?
+  ratified    DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ============================================
+// SYSTEM TABLES (Optional for Phase 2+)
+// ============================================
+
+// Admin Users (commented out for now - not needed with Prisma Studio)
+// model User {
+//   id          String   @id @default(cuid())
+//   email       String   @unique
+//   name        String?
+//   password    String   // Hashed with bcrypt
+//   role        UserRole @default(VIEWER)
+//   createdAt   DateTime @default(now())
+//   updatedAt   DateTime @updatedAt
+//   lastLoginAt DateTime?
+// }
+
+// enum UserRole {
+//   ADMIN
+//   EDITOR
+//   VIEWER
+// }
+
+// Audit Log for tracking changes (optional)
+// model AuditLog {
+//   id         String   @id @default(cuid())
+//   action     String   // CREATE, UPDATE, DELETE
+//   entityType String   // Bill, Law, etc.
+//   entityId   String
+//   changes    String   @db.Text // JSON of changes
+//   userId     String?
+//   createdAt  DateTime @default(now())
+//   
+//   @@index([entityType])
+//   @@index([createdAt])
+// }
