@@ -39,6 +39,7 @@
         "ably": "^2.14.0",
         "autoprefixer": "^10.4.22",
         "axios": "^1.13.0",
+        "daisyui": "^5.2.3",
         "dotenv": "^17.2.3",
         "lucide-vue-next": "^0.545.0",
         "noblox.js": "^6.2.0",
@@ -53,7 +54,6 @@
     },
     "devDependencies": {
         "@types/node": "^24.7.2",
-        "daisyui": "^5.2.3",
         "dotenv-cli": "^10.0.0",
         "netlify-cli": "^23.11.1",
         "tsx": "^4.20.6"
