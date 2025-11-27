@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql" // Production uses PostgreSQL for Netlify Functions compatibility
+  provider = "sqlite" // Local development and Netlify Functions compatible
   url      = env("DATABASE_URL")
 }
 
