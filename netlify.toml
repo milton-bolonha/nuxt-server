@@ -2,8 +2,8 @@
 # Documentation: https://docs.netlify.com/configure-builds/file-based-configuration/
 
 [build]
-# Build command - all DB operations handled in runtime
-command = "npm run build && if not exist .output\\public mkdir .output\\public && xcopy public\\* .output\\public\\ /E /I /H /Y >nul 2>&1"
+# Build command for Nuxt with Prisma PostgreSQL migrations
+command = "npx prisma generate && npx prisma migrate deploy && npm run build"
 # Publish directory (Nuxt outputs to .output/public)
 publish = ".output/public"
 

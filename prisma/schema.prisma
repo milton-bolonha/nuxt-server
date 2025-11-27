@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite" // Local dev uses SQLite, change to "postgresql" for Railway migrations
+  provider = "postgresql" // Production uses PostgreSQL for Netlify Functions compatibility
   url      = env("DATABASE_URL")
 }
 
