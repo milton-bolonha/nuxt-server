@@ -3,7 +3,7 @@
 
 [build]
 # Build command for Nuxt with Prisma PostgreSQL migrations
-command = "DATABASE_URL=${DATABASE_URL:-postgresql://temp:temp@localhost:5432/temp} npx prisma generate && npx prisma migrate deploy && npm run build"
+command = "export DATABASE_URL=${DATABASE_URL:-postgresql://temp:temp@localhost:5432/temp} && npx prisma generate && npx prisma migrate deploy && npm run build"
 # Publish directory (Nuxt outputs to .output/public)
 publish = ".output/public"
 
