@@ -93,8 +93,8 @@ O projeto está configurado para deploy automático no Netlify:
 - `.netlify/functions-internal` - Funções server-side
 
 ### Processo de Build:
-1. Gera cliente Prisma
-2. Build do Nuxt (client + server)
+1. Build do Nuxt (client + server)
+2. Inicialização automática do banco no runtime
 3. Deploy automático no Netlify
 
 ### Banco de Dados:
