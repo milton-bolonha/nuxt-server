@@ -2,8 +2,8 @@
 # Documentation: https://docs.netlify.com/configure-builds/file-based-configuration/
 
 [build]
-# Build command for Nuxt with Prisma PostgreSQL migrations
-command = "export DATABASE_URL=${DATABASE_URL:-postgresql://temp:temp@localhost:5432/temp} && npx prisma generate && npx prisma migrate deploy && npm run build"
+# Build command for Nuxt with Prisma PostgreSQL (migrations run separately)
+command = "export DATABASE_URL=${DATABASE_URL:-postgresql://temp:temp@localhost:5432/temp} && npx prisma generate && npm run build"
 # Publish directory (Nuxt outputs to .output/public)
 publish = ".output/public"
 
