@@ -11,7 +11,7 @@ export default defineNuxtConfig({
     },
 
     nitro: {
-        preset: "node-server",
+        preset: "netlify-edge",
         devServer: {
             watch: [],
         },
