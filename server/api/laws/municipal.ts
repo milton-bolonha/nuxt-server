@@ -1,12 +1,43 @@
-// Dados estáticos das leis municipais
-const municipalLaws = [
-    {
-        code: "Chapter 2 § 01",
-        title: "Resisting Arrest",
-        description:
-            "a. The act of resisting arrest shall be the act of willfully evading law enforcement on foot, or a person with the authority to execute the law as prescribed by the Law of the Land, in an attempt to resist penalization or punishment for offenses committed, or in an attempt to evade detainment and arrest.<br><br>i.  Officers shall require probable cause to make arrests, and reasonable suspicion to detain subjects, pursuant to the Constitution, Charter and Law.",
-        category: "Chapter 2",
-    },
+import municipalData from "../../data/municipal-laws.json";
+
+export default defineEventHandler(async (event) => {
+    validateApiAccess(event, "laws/municipal");
+
+    try {
+        const grouped = municipalData.municipalLaws.reduce((acc: any, law) => {
+            const existing = acc.find((g: any) => g.label === law.category);
+            if (existing) {
+                existing.data.push({
+                    title: law.code,
+                    subtitle: law.title,
+                    content: law.description,
+                    excerp: law.description?.substring(0, 150) + "...",
+                });
+            } else {
+                acc.push({
+                    label: law.category,
+                    data: [
+                        {
+                            title: law.code,
+                            subtitle: law.title,
+                            content: law.description,
+                            excerp: law.description?.substring(0, 150) + "...",
+                        },
+                    ],
+                });
+            }
+            return acc;
+        }, []);
+
+        return grouped;
+    } catch (error) {
+        console.error("Error fetching municipal laws:", error);
+        throw createError({
+            statusCode: 500,
+            message: "Failed to fetch municipal laws",
+        });
+    }
+});
     {
         code: "Chapter 2 § 02",
         title: "Resisting Arrest with a Deadly Weapon",

@@ -74,6 +74,9 @@ to = "/index.html"
 status = 200
 force = false
 
+[functions]
+included_files = ["server/bills/**"]
+
 # Environment variables
 # Note: Set actual values in Netlify dashboard under Site settings > Environment variables
 # Do NOT commit sensitive values to git

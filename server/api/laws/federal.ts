@@ -1,12 +1,25 @@
-// Dados estáticos das leis federais
-const federalLaws = [
-    {
-        title: "18 U.S. Code § 2",
-        description:
-            "This section states that anyone who commits an offense against the United States or aids, abets, counsels, commands, induces, or procures its commission is punishable as a principal.<br><br>This section establishes liability for those who assist in federal crimes.",
-        uscode: "18 U.S. Code § 2",
-        category: "criminal",
-    },
+import federalData from "../../data/laws.json";
+
+export default defineEventHandler(async (event) => {
+    validateApiAccess(event, "laws/federal");
+
+    try {
+        return federalData.federalLaws.map((law) => ({
+            title: law.title,
+            subtitle: law.title,
+            content: law.description,
+            excerp:
+                law.description?.substring(0, 200) +
+                (law.description && law.description.length > 200 ? "..." : ""),
+        }));
+    } catch (error) {
+        console.error("Error fetching federal laws:", error);
+        throw createError({
+            statusCode: 500,
+            message: "Failed to fetch federal laws",
+        });
+    }
+});
     {
         title: "18 U.S. Code § 3",
         description:

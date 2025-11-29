@@ -691,7 +691,7 @@ const federalLaws = [
   }
 ];
 const federal = defineEventHandler(async (event) => {
-  validateApiAccess(event, "laws/federalLaws");
+  validateApiAccess(event, "laws/federal");
   try {
     return federalLaws.map((law) => {
       var _a;
