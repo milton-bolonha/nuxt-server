@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import { useApiToken } from '~/composables/useApiToken'
 
 export interface Constitution {
     title: string
@@ -62,13 +63,12 @@ export const useConstitutionStore = defineStore('constitution', {
             this.error = null
 
             try {
-                const tokenResponse = await $fetch('/api/auth/token', {
-                    method: 'POST',
-                    body: { endpoint: 'constitution/constitution' }
-                })
+                const { getToken } = useApiToken()
+                const token = await getToken('constitution/constitution')
+
                 const data = await $fetch<Constitution[]>('/api/constitution/constitution', {
                     headers: {
-                        Authorization: `Bearer ${tokenResponse.token}`
+                        Authorization: `Bearer ${token}`
                     }
                 })
 

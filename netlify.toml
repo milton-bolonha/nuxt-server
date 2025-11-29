@@ -2,50 +2,51 @@
 # Documentation: https://docs.netlify.com/configure-builds/file-based-configuration/
 
 [build]
-# Build command - Nuxt handles everything automatically
-command = "npm run build"
-# Publish directory (Nuxt outputs to .output/public)
-publish = ".output/public"
-
-# Functions directory - Nitro generates in .netlify/functions-internal for Netlify
-functions = ".netlify/functions-internal"
+  # Build command for Nuxt with Prisma
+  command = "npx prisma generate && npx prisma migrate deploy && npm run build"
+  
+  # Publish directory (Nuxt outputs to .output/public)
+  publish = ".output/public"
+  
+  # Functions directory for Nuxt server routes (production only)
+  functions = ".output/server"
 
 [build.environment]
-# Node version for build
-NODE_VERSION = "24"
-
-# Enable Node.js modules
-NODE_OPTIONS = "--max-old-space-size=4096"
+  # Node version for build
+  NODE_VERSION = "24"
+  
+  # Enable Node.js modules
+  NODE_OPTIONS = "--max-old-space-size=4096"
 
 # Netlify Dev (local development)
 [dev]
-framework = "nuxt"
-port = 8888
-targetPort = 3001
-autoLaunch = false
+  framework = "nuxt"
+  port = 8888
+  targetPort = 3001
+  autoLaunch = false
 
 # Headers for security and performance
 [[headers]]
-for = "/*"
-[headers.values]
-# Security headers
-X-Frame-Options = "DENY"
-X-Content-Type-Options = "nosniff"
-X-XSS-Protection = "1; mode=block"
-Referrer-Policy = "strict-origin-when-cross-origin"
-
-# Cache control for static assets
-Cache-Control = "public, max-age=31536000, immutable"
-
-[[headers]]
-for = "*.html"
-[headers.values]
-Cache-Control = "public, max-age=0, must-revalidate"
+  for = "/*"
+  [headers.values]
+    # Security headers
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    X-XSS-Protection = "1; mode=block"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    
+    # Cache control for static assets
+    Cache-Control = "public, max-age=31536000, immutable"
 
 [[headers]]
-for = "/api/*"
-[headers.values]
-Cache-Control = "no-cache, no-store, must-revalidate"
+  for = "*.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/api/*"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
 
 # Redirects (if needed)
 # Uncomment and modify as needed
@@ -65,10 +66,10 @@ Cache-Control = "no-cache, no-store, must-revalidate"
 # SPA fallback for client-side routing
 # Only applies in production (not in dev mode)
 [[redirects]]
-from = "/*"
-to = "/index.html"
-status = 200
-force = false
+  from = "/*"
+  to = "/index.html"
+  status = 200
+  force = false
 
 # Environment variables
 # Note: Set actual values in Netlify dashboard under Site settings > Environment variables

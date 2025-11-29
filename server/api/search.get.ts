@@ -16,8 +16,8 @@ export default defineEventHandler(async (event) => {
       const bills = await prisma.bill.findMany({
         where: {
           OR: [
-            { number: { contains: searchTerm } },
-            { description: { contains: searchTerm } }
+            { number: { contains: searchTerm, mode: 'insensitive' } },
+            { description: { contains: searchTerm, mode: 'insensitive' } }
           ]
         },
         take: 10,
@@ -37,9 +37,9 @@ export default defineEventHandler(async (event) => {
       const laws = await prisma.law.findMany({
         where: {
           OR: [
-            { title: { contains: searchTerm } },
-            { uscode: { contains: searchTerm } },
-            { description: { contains: searchTerm } }
+            { title: { contains: searchTerm, mode: 'insensitive' } },
+            { uscode: { contains: searchTerm, mode: 'insensitive' } },
+            { description: { contains: searchTerm, mode: 'insensitive' } }
           ]
         },
         take: 10,
@@ -58,8 +58,8 @@ export default defineEventHandler(async (event) => {
       const definitions = await prisma.definition.findMany({
         where: {
           OR: [
-            { title: { contains: searchTerm } },
-            { description: { contains: searchTerm } }
+            { title: { contains: searchTerm, mode: 'insensitive' } },
+            { description: { contains: searchTerm, mode: 'insensitive' } }
           ]
         },
         take: 10,
@@ -78,9 +78,9 @@ export default defineEventHandler(async (event) => {
       const eos = await prisma.executiveOrder.findMany({
         where: {
           OR: [
-            { number: { contains: searchTerm } },
-            { title: { contains: searchTerm } },
-            { description: { contains: searchTerm } }
+            { number: { contains: searchTerm, mode: 'insensitive' } },
+            { title: { contains: searchTerm, mode: 'insensitive' } },
+            { description: { contains: searchTerm, mode: 'insensitive' } }
           ]
         },
         take: 10,

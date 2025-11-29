@@ -123,8 +123,8 @@ export const defaultRateLimiter = new RateLimiter({
 });
 
 export const strictRateLimiter = new RateLimiter({
-  windowMs: 15 * 60 * 1000, 
-  max: 5, 
+  windowMs: 15 * 60 * 1000,
+  max: process.env.NODE_ENV === 'production' ? 5 : 50, // Mais permissivo em dev
   message: 'Too many authentication attempts, please try again later.',
 });
 
