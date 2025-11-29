@@ -129,7 +129,7 @@ const municipalLaws = [
 ];
 
 export default defineEventHandler(async (event) => {
-    validateApiAccess(event, "laws/municipalLaws");
+    validateApiAccess(event, "laws/municipal");
 
     try {
         const grouped = municipalLaws.reduce((acc: any, law) => {
