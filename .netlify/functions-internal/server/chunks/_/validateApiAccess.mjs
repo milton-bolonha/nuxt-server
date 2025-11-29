@@ -2,7 +2,9 @@ import { k as getHeader, c as createError } from './nitro.mjs';
 import { v as validateApiToken } from './apiTokens.mjs';
 
 function validateApiAccess(event, endpoint) {
+  console.log("\u{1F510} [DEBUG] Validating access for endpoint:", endpoint);
   const authHeader = getHeader(event, "authorization");
+  console.log("\u{1F510} [DEBUG] Auth header present:", !!authHeader);
   if (!authHeader) {
     throw createError({
       statusCode: 401,

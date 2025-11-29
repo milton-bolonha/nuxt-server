@@ -4066,7 +4066,7 @@ function _expandFromEnv(value) {
 const _inlineRuntimeConfig = {
   "app": {
     "baseURL": "/",
-    "buildId": "c259faf8-fdbb-4463-bb74-bc2de10bd201",
+    "buildId": "93552008-018a-46ff-8a91-a1e56c39a0b6",
     "buildAssetsDir": "/_nuxt/",
     "cdnURL": ""
   },
@@ -4607,12 +4607,24 @@ class RateLimiter {
   middleware() {
     return async (event) => {
       const result = await this.check(event);
-      event.node.res.setHeader("X-RateLimit-Limit", result.limit.toString());
-      event.node.res.setHeader("X-RateLimit-Remaining", result.remaining.toString());
-      event.node.res.setHeader("X-RateLimit-Reset", new Date(result.resetTime).toISOString());
+      event.node.res.setHeader(
+        "X-RateLimit-Limit",
+        result.limit.toString()
+      );
+      event.node.res.setHeader(
+        "X-RateLimit-Remaining",
+        result.remaining.toString()
+      );
+      event.node.res.setHeader(
+        "X-RateLimit-Reset",
+        new Date(result.resetTime).toISOString()
+      );
       if (!result.allowed) {
         if (result.retryAfter) {
-          event.node.res.setHeader("Retry-After", result.retryAfter.toString());
+          event.node.res.setHeader(
+            "Retry-After",
+            result.retryAfter.toString()
+          );
         }
         throw createError$1({
           statusCode: 429,
@@ -4636,8 +4648,8 @@ const defaultRateLimiter = new RateLimiter({
 });
 const strictRateLimiter = new RateLimiter({
   windowMs: 15 * 60 * 1e3,
-  max: 5 ,
-  // Mais permissivo em dev
+  max: 100 ,
+  // Limite alto mas seguro
   message: "Too many authentication attempts, please try again later."
 });
 new RateLimiter({

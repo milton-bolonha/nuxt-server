@@ -1,5 +1,5 @@
 // Importar dados estáticos da pasta server/data
-import constitutionData from "../data/constitution.json";
+import constitutionData from "../../data/constitution.json";
 
 export default defineEventHandler(async (event) => {
     console.log("🔍 [DEBUG] Constitution API called (static data)");

@@ -1,4 +1,4 @@
-import frcmpData from "../data/federal-rules-frcmp.json";
+import frcmpData from "../../data/federal-rules-frcmp.json";
 
 export default defineEventHandler(async (event) => {
     validateApiAccess(event, "federal-rules/frcmp");

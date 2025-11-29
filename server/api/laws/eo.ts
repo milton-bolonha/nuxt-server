@@ -1,4 +1,4 @@
-import executiveData from "../data/executive-orders.json";
+import executiveData from "../../data/executive-orders.json";
 
 export default defineEventHandler(async (event) => {
     validateApiAccess(event, "laws/eo");

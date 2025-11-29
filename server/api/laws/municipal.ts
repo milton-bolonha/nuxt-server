@@ -1,7 +1,7 @@
-import municipalData from "../data/municipal-laws.json";
+import municipalData from "../../data/municipal-laws.json";
 
 export default defineEventHandler(async (event) => {
-    validateApiAccess(event, "laws/municipal");
+    validateApiAccess(event, "laws/municipalLaws");
 
     try {
         const grouped = municipalData.municipalLaws.reduce((acc: any, law) => {

@@ -1,7 +1,7 @@
-import lawsData from "../data/laws.json";
+import lawsData from "../../data/laws.json";
 
 export default defineEventHandler(async (event) => {
-    validateApiAccess(event, "laws/federal");
+    validateApiAccess(event, "laws/federalLaws");
 
     try {
         return lawsData.federalLaws.map((law) => ({
