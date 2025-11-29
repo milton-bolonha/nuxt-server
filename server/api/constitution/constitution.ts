@@ -1,37 +1,34 @@
-import prisma from '../../utils/db'
+// Importar dados estáticos dos seeds
+import { constitutionArticles } from "../../prisma/seeds/constitution";
 
 export default defineEventHandler(async (event) => {
-    console.log('🔍 [DEBUG] Constitution API called')
+    console.log("🔍 [DEBUG] Constitution API called (static data)");
 
     try {
-        console.log('🔐 [DEBUG] Validating API access...')
-        validateApiAccess(event, 'constitution/constitution')
-        console.log('✅ [DEBUG] API access validated')
+        console.log("🔐 [DEBUG] Validating API access...");
+        validateApiAccess(event, "constitution/constitution");
+        console.log("✅ [DEBUG] API access validated");
 
-        console.log('🗄️ [DEBUG] Connecting to database...')
-        const articles = await prisma.constitutionArticle.findMany({
-            orderBy: { number: 'asc' }
-        })
-        console.log('📊 [DEBUG] Found', articles.length, 'constitution articles')
-
-        const result = articles.map(article => ({
+        // Formatar dados para o formato esperado pela API
+        const result = constitutionArticles.map((article) => ({
             title: article.title,
             description: article.summary,
             hasArticle: true,
-            key: `article${article.number}`
-        }))
+            key: `article${article.number}`,
+        }));
 
-        console.log('✨ [DEBUG] Returning', result.length, 'articles')
-        return result
-
+        console.log(
+            "📊 [DEBUG] Returning",
+            result.length,
+            "constitution articles"
+        );
+        return result;
     } catch (error) {
-        console.error('❌ [ERROR] Constitution API failed:', error)
-        console.error('❌ [ERROR] Error stack:', error.stack)
+        console.error("❌ [ERROR] Constitution API failed:", error);
         throw createError({
             statusCode: 500,
-            message: 'Failed to fetch constitution articles',
-            cause: error.message
-        })
+            message: "Failed to fetch constitution articles",
+            cause: error.message,
+        });
     }
-})
-
+});
