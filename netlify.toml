@@ -10,6 +10,9 @@ publish = "dist"
 
 # Functions directory for Nuxt server routes (production only)
 functions = ".netlify/functions-internal/server"
+# Incluir o arquivo do banco SQLite nas functions
+[functions]
+included_dirs = ["prisma"]
 
 [build.environment]
 # Node version for build
