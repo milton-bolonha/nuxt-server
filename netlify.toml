@@ -9,7 +9,7 @@ command = "npx prisma generate && npx prisma migrate deploy && npm run db:seed &
 publish = "dist"
 
 # Functions directory for Nuxt server routes (production only)
-# functions = ".output/server"
+functions = ".netlify/functions-internal/server"
 
 [build.environment]
 # Node version for build
