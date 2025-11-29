@@ -1,24 +1,36 @@
-import prisma from "../../utils/db";
+// Importar dados estáticos da pasta server/data
+import constitutionData from "../../data/constitution-full.json";
 
 export default defineEventHandler(async (event) => {
-    validateApiAccess(event, "constitution/constitution-amandments");
+    console.log("🔍 [DEBUG] Constitution Amendments API called (static data)");
 
     try {
-        const amendments = await prisma.constitutionAmendment.findMany({
-            orderBy: { number: "asc" },
-        });
+        console.log("🔐 [DEBUG] Validating API access...");
+        validateApiAccess(event, "constitution/constitution-amandments");
+        console.log("✅ [DEBUG] API access validated");
 
-        return amendments.map((amendment: any) => ({
-            title: amendment.title,
-            content: amendment.content,
-            description: amendment.summary,
-            hasArticle: false,
-        }));
+        // Formatar dados para o formato esperado pela API
+        const result = constitutionData.constitutionAmendments.map(
+            (amendment) => ({
+                title: amendment.title,
+                content: amendment.content,
+                description: amendment.summary,
+                hasArticle: false,
+            })
+        );
+
+        console.log(
+            "📊 [DEBUG] Returning",
+            result.length,
+            "constitution amendments"
+        );
+        return result;
     } catch (error) {
-        console.error("Error fetching constitution amendments:", error);
+        console.error("❌ [ERROR] Constitution Amendments API failed:", error);
         throw createError({
             statusCode: 500,
-            message: "Failed to fetch constitution amendments",
+            statusMessage: "Failed to fetch constitution amendments",
+            cause: error.message,
         });
     }
 });
