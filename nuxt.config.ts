@@ -15,6 +15,13 @@ export default defineNuxtConfig({
         devServer: {
             watch: [],
         },
+        // Incluir o arquivo SQLite no bundle das functions
+        serverAssets: [
+            {
+                baseName: "prisma",
+                dir: "prisma",
+            },
+        ],
     },
 
     app: {
