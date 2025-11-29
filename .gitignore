@@ -33,3 +33,8 @@ scripts/backups/
 *.sql.gz
 *.sql.zip
 *.db.backup
+
+# Database
+*.db
+*.db-journal
+prisma/migrations/
