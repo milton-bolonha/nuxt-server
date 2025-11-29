@@ -1,0 +1,850 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { 
+  Search, Home, Users, BookOpen, MessageSquare, Bell, 
+  MoreHorizontal, CheckCircle, Clock, Calendar, 
+  Trophy, Target, Video, FileText, PieChart, 
+  AlertTriangle, ChevronRight, ChevronDown, Star, Award, Zap,
+  Lock, PlayCircle, HelpCircle, Download, Hash, ExternalLink, Layout,
+  Plus, Folder, List, Clipboard, Send, X, BarChart2, Printer, User, Map,
+  Heart, Brain, Eye, Paintbrush, Sparkles, Medal, Share2, Link as LinkIcon, CheckSquare, Square, Loader2,
+  HeartPulse, Briefcase, Info, Paperclip, Swords, Skull, Gem, Settings, Menu, ChevronLeft, RefreshCcw
+} from 'lucide-react';
+
+// --- CONFIGURAÇÃO & UTILITÁRIOS ---
+
+const XP_PER_LEVEL = 500;
+const CURRENT_DATE = "2025-11-22";
+
+const calculateDaysInactive = (lastDate) => {
+  const diff = new Date(CURRENT_DATE) - new Date(lastDate);
+  return Math.floor(diff / (1000 * 60 * 60 * 24));
+};
+
+const getRiskBadge = (lastDate) => {
+  const days = calculateDaysInactive(lastDate);
+  if (days >= 7) return <span className="bg-red-500 border-2 border-black text-white text-[10px] px-2 py-0.5 rounded font-black flex items-center gap-1 uppercase shadow-[2px_2px_0px_rgba(0,0,0,1)]"><AlertTriangle size={10}/> {days}d OFF</span>;
+  if (days >= 3) return <span className="bg-yellow-400 border-2 border-black text-black text-[10px] px-2 py-0.5 rounded font-black uppercase shadow-[2px_2px_0px_rgba(0,0,0,1)]">{days}d OFF</span>;
+  return <span className="bg-green-500 border-2 border-black text-white text-[10px] px-2 py-0.5 rounded font-black uppercase shadow-[2px_2px_0px_rgba(0,0,0,1)]">ATIVO</span>;
+};
+
+// --- BANCO DE DADOS ---
+
+const USER_DATA = {
+  id: "u1",
+  name: "Guilherme Cirelli",
+  headline: "Brawler Fullstack",
+  avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Guilherme&backgroundColor=ffdfbf",
+  role: "mentee",
+  level: 3,
+  xp: 1250,
+  nextLevelXp: 1500,
+  streak: 14,
+  totalProgress: 25,
+  badges: [
+    { name: "Primeiro Deploy", icon: Target, criteria: "Fez deploy na Vercel" },
+    { name: "Git Master", icon: Hash, criteria: "Usou Conventional Commits" },
+    { name: "Comunidade", icon: Users, criteria: "Entrou no Discord" }
+  ],
+  notifications: 3,
+  skills: ["Next.js", "React", "Tailwind", "Git"],
+  projects: [
+    { name: "Portfólio Pessoal", desc: "Site pessoal com Next.js", link: "#" },
+    { name: "Manual do Mentorado", desc: "Documentação open-source", link: "#" }
+  ]
+};
+
+const MENTOR_DATA = {
+  id: "m1",
+  name: "Master Yoda",
+  headline: "Grão-Mestre Jedi",
+  avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Yoda&backgroundColor=b6e3f4",
+  totalMentees: 12,
+  notifications: 5
+};
+
+const MENTEES_LIST = [
+  { id: 1, name: "Guilherme Cirelli", avatar: USER_DATA.avatar, phase: "Fase 2", lastActivity: "2025-11-15" }, 
+  { id: 2, name: "João Silva", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Joao&backgroundColor=c0aede", phase: "Fase 1", lastActivity: "2025-11-21" }, 
+  { id: 3, name: "Maria Oliveira", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Maria&backgroundColor=b6e3f4", phase: "Fase 4", lastActivity: "2025-11-19" },
+];
+
+const TRAILS_DATABASE = {
+  ignicao: {
+    name: "Trilha Ignição",
+    description: "Construa sua fundação sólida.",
+    phases: [
+      { id: 0, name: 'Fundação', color: 'from-cyan-400 to-blue-600', missions: ['concept', 'home'], locked: false },
+      { id: 1, name: 'Infraestrutura', color: 'from-purple-400 to-pink-600', missions: ['admin'], locked: true }
+    ],
+    missions: {
+      concept: { 
+        name: 'Conceito Principal', icon: Zap, 
+        intro: 'Entenda a arquitetura base do sistema.',
+        tasks: [
+          { id: 't1', text: 'Ler documentação', xp: 50, type: 'simple', details: "Clean Architecture.", resources: [{ title: "Artigo: Clean Arch", url: "#" }] },
+          { id: 't2', text: 'Configurar Git', xp: 50, type: 'proof', prompt: 'Link do repo:', hasAttachment: true }
+        ]
+      },
+      home: { 
+        name: 'Home Hero', icon: Layout, 
+        intro: 'Construa a página principal.',
+        tasks: [
+          { id: 't3', text: 'Criar Hero', xp: 60, type: 'simple', details: "Use Tailwind CSS." },
+          { id: 't4', text: 'Formulário', xp: 80, type: 'checklist', subtasks: [{ id: 'st1', text: 'Input email' }, { id: 'st2', text: 'Validação' }] }
+        ]
+      },
+      admin: { name: 'Painel Admin', icon: List, intro: 'Área restrita.', tasks: [] }
+    }
+  }
+};
+
+const FEED_UPDATES = [
+  { id: 1, author: "Comunidade React", avatar: "https://api.dicebear.com/7.x/identicon/svg?seed=React", type: "community", content: "Dica: Use React Query para cache de dados!", likes: 45, comments: 12 },
+  { id: 2, author: "Sistema", avatar: USER_DATA.avatar, type: "milestone", content: "🏆 Guilherme subiu para o Nível 3!", likes: 24, comments: 5 }
+];
+
+const TEMPLATES_NOTAS = [
+  { label: "Feedback", text: "Pontos Fortes: ...\nMelhoria: ..." },
+  { label: "Diagnóstico", text: "Situação Atual: ...\nObjetivo: ..." },
+  { label: "Check-in", text: "Feito: ...\nDificuldades: ..." }
+];
+
+const MENTEE_DETAIL_MOCK = {
+  id: 1,
+  name: "Guilherme Cirelli",
+  startDate: "2025-01-15",
+  lastActivity: "2025-11-15", 
+  progress: 35,
+  softSkills: { comunicacao: 4, lideranca: 2, proatividade: 5, tecnico: 3, inteligenciaEmocional: 4 },
+  smartGoals: [
+    { id: 1, s: "Aprender Next.js", m: "Criar 1 app completo", a: "Sim, tenho base React", r: "Vagas pedem Next", t: "30 dias", status: "pending" },
+    { id: 2, s: "Melhorar Inglês", m: "Ler 1 artigo/dia", a: "30min livres", r: "Docs oficiais", t: "Contínuo", status: "completed" }
+  ],
+  phases: [
+    {
+      id: 1,
+      title: "Fase 1: Diagnóstico & Alinhamento",
+      completed: true,
+      isOpen: false,
+      notes: [
+        { id: 1, text: "Guilherme tem boa base de lógica, mas falta prática em React.", date: "15/01" }
+      ],
+      materials: [
+        { id: 1, text: "Kit de Boas Vindas (PDF)", sent: true }
+      ],
+      questions: ["Qual seu maior obstáculo hoje?", "Onde você quer estar em 1 ano?"],
+      challenges: ["Criar perfil no LinkedIn", "Definir horários de estudo"]
+    },
+    {
+      id: 2,
+      title: "Fase 2: Fundamentos Técnicos",
+      completed: false,
+      isOpen: true, 
+      notes: [],
+      materials: [
+        { id: 1, text: "Guia de React Hooks", sent: true },
+        { id: 2, text: "Projeto: To-Do List", sent: false }
+      ],
+      questions: ["O que você aprendeu essa semana?", "Como explicaria 'State'?"],
+      challenges: ["Refatorar código antigo", "Ler documentação oficial"]
+    }
+  ]
+};
+
+const BUSHIDO_DATABASE = [
+  { id: "corpo", area: "Corpo", icon: Heart, color: "text-red-400", bg: "bg-red-900/30", border: "border-red-500", objetivo: "Vitalidade Física", tarefas: [{ id: "b1", text: "Beber 2L de água" }] },
+  { id: "mente", area: "Mente", icon: Brain, color: "text-blue-400", bg: "bg-blue-900/30", border: "border-blue-500", objetivo: "Foco e Clareza", tarefas: [{ id: "b4", text: "Leitura (10 pág)" }] },
+  { id: "criativo", area: "Criativo", icon: Paintbrush, color: "text-purple-400", bg: "bg-purple-900/30", border: "border-purple-500", objetivo: "Inspiração", tarefas: [{ id: "b7", text: "Ouvir música nova" }] }
+];
+
+// --- COMPONENTES VISUAIS ESTILO "BRAWL" ---
+
+const ArcadeButton = ({ children, onClick, color = "blue", className = "", size = "md", icon: Icon }) => {
+  const styles = {
+    blue: "bg-[#0096e6] border-[#006ab3] text-white",
+    yellow: "bg-[#ffce00] border-[#cc9900] text-black",
+    green: "bg-[#00cc00] border-[#008f00] text-white",
+    red: "bg-[#ff3333] border-[#b30000] text-white",
+    purple: "bg-[#9d4edd] border-[#5a189a] text-white",
+    dark: "bg-[#1e1e2e] border-[#000000] text-gray-300",
+  };
+
+  const sizes = {
+    sm: "px-2 py-1 text-xs border-b-2",
+    md: "px-4 py-2 text-sm border-b-4",
+    lg: "px-6 py-4 text-lg border-b-[6px]",
+    xl: "px-8 py-5 text-xl border-b-[8px]",
+  };
+
+  return (
+    <button 
+      onClick={onClick}
+      className={`
+        ${styles[color]} ${sizes[size]} 
+        rounded-xl font-black uppercase tracking-wide 
+        active:border-b-0 active:translate-y-1 transition-all 
+        shadow-lg hover:brightness-110 flex items-center justify-center gap-2
+        ${className}
+      `}
+    >
+      {Icon && <Icon size={size === 'lg' || size === 'xl' ? 28 : 18} strokeWidth={3} />}
+      {children}
+    </button>
+  );
+};
+
+// Card Estilo "Lobby"
+const LobbyPanel = ({ children, className = "", title, onClose }) => (
+  <div className={`bg-[#131226] border-4 border-black rounded-2xl overflow-hidden flex flex-col shadow-2xl ${className}`}>
+    {(title || onClose) && (
+      <div className="bg-[#2c2b4b] border-b-4 border-black p-3 flex justify-between items-center">
+        {title && <h3 className="font-black text-white uppercase italic tracking-wider text-lg">{title}</h3>}
+        {onClose && (
+          <button onClick={onClose} className="bg-red-500 text-white p-1 rounded border-2 border-black hover:bg-red-400">
+            <X size={20} strokeWidth={4}/>
+          </button>
+        )}
+      </div>
+    )}
+    <div className="p-4 overflow-y-auto custom-scrollbar h-full text-white">
+      {children}
+    </div>
+  </div>
+);
+
+const ResourcePill = ({ icon: Icon, value, color = "bg-black", textColor="text-white" }) => (
+  <div className="relative group">
+    <div className="bg-black/40 h-8 sm:h-10 rounded-md flex items-center pr-4 pl-8 border-2 border-black/20 min-w-[80px] sm:min-w-[100px] justify-end">
+      <span className={`font-black ${textColor} text-sm sm:text-base drop-shadow-md`}>{value}</span>
+    </div>
+    <div className={`absolute -left-2 -top-1 w-10 h-10 sm:w-12 sm:h-12 ${color} border-2 border-black rounded-lg flex items-center justify-center shadow-md transform -rotate-6 group-hover:rotate-0 transition-transform`}>
+      <Icon className="text-white drop-shadow-sm" size={20} strokeWidth={3} />
+    </div>
+  </div>
+);
+
+const ProgressBar = ({ current, max, color = "bg-yellow-400", height = "h-4", showText = true }) => {
+  const percentage = Math.min(100, (current / max) * 100);
+  return (
+    <div className="w-full">
+      <div className={`w-full bg-black/40 rounded-full ${height} overflow-hidden border-2 border-black/20`}>
+        <div 
+          className={`${color} ${height} transition-all duration-500 ease-out relative`} 
+          style={{ width: `${percentage}%` }}
+        >
+          <div className="absolute top-0 left-0 w-full h-1/2 bg-white/30"></div>
+        </div>
+      </div>
+      {showText && <p className="text-[10px] text-right mt-1 font-black text-white/60 uppercase">{Math.round(percentage)}%</p>}
+    </div>
+  );
+};
+
+const Badge = ({ count }) => (
+  count > 0 ? <span className="absolute -top-2 -right-2 bg-red-500 border-2 border-white text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full font-black animate-bounce shadow-sm">{count}</span> : null
+);
+
+// --- CALENDÁRIO GAMIFICADO ---
+const CalendarWidget = () => {
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const days = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
+  
+  const getDaysInMonth = (date) => new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+  const getFirstDay = (date) => new Date(date.getFullYear(), date.getMonth(), 1).getDay();
+
+  return (
+    <div className="space-y-4">
+      <div className="flex justify-between items-center bg-black/20 p-2 rounded-xl border-2 border-black/20">
+        <button onClick={() => setCurrentDate(new Date(currentDate.setMonth(currentDate.getMonth() - 1)))} className="p-1 hover:bg-white/10 rounded"><ChevronLeft className="text-white" /></button>
+        <span className="text-white font-black uppercase tracking-widest">{currentDate.toLocaleString('default', { month: 'long', year: 'numeric' })}</span>
+        <button onClick={() => setCurrentDate(new Date(currentDate.setMonth(currentDate.getMonth() + 1)))} className="p-1 hover:bg-white/10 rounded"><ChevronRight className="text-white" /></button>
+      </div>
+      
+      <div className="grid grid-cols-7 gap-1 text-center mb-2">
+        {days.map((d, i) => <div key={i} className="text-[10px] font-black text-gray-400">{d}</div>)}
+      </div>
+      
+      <div className="grid grid-cols-7 gap-2">
+        {Array.from({ length: getFirstDay(currentDate) }).map((_, i) => <div key={`empty-${i}`} />)}
+        {Array.from({ length: getDaysInMonth(currentDate) }).map((_, i) => {
+          const day = i + 1;
+          const isToday = day === new Date().getDate() && currentDate.getMonth() === new Date().getMonth();
+          const hasEvent = [5, 12, 25].includes(day);
+          return (
+            <div key={day} className={`aspect-square flex flex-col items-center justify-center rounded-lg border-2 relative cursor-pointer hover:scale-110 transition ${isToday ? 'bg-yellow-400 border-yellow-600 text-black' : 'bg-[#1e1b4b] border-[#312e81] text-white'}`}>
+              <span className="font-bold text-sm">{day}</span>
+              {hasEvent && <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 mt-1 animate-pulse shadow-[0_0_5px_cyan]"></div>}
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="bg-[#1e1b4b] p-3 rounded-xl border-2 border-[#312e81] space-y-2">
+         <h4 className="text-xs font-black text-gray-400 uppercase">Próximos Eventos</h4>
+         <div className="flex items-center gap-3 bg-[#0f172a] p-2 rounded-lg border border-[#312e81]">
+            <div className="bg-purple-600 p-2 rounded border border-black"><Video size={16} className="text-white"/></div>
+            <div>
+               <p className="text-white font-bold text-xs uppercase">Mentoria 1:1</p>
+               <p className="text-[10px] text-gray-400">Hoje, 15:00</p>
+            </div>
+         </div>
+      </div>
+    </div>
+  );
+};
+
+// --- COMPONENTES DO APP ---
+
+const NavbarDock = ({ activeView, setActiveView, isMentorMode, toggleMode }) => (
+  <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50 w-[95%] max-w-2xl">
+    <div className="bg-[#1e1e2e]/90 backdrop-blur-md border-4 border-black rounded-2xl p-2 flex justify-between items-end shadow-2xl gap-2">
+      <div className="flex gap-1 sm:gap-2">
+        <DockItem icon={Home} id="dashboard" activeView={activeView} setActiveView={setActiveView} color="blue" />
+        {!isMentorMode && (
+          <>
+            <DockItem icon={Briefcase} id="portfolio" activeView={activeView} setActiveView={setActiveView} color="purple" />
+            <DockItem icon={HeartPulse} id="bushido" activeView={activeView} setActiveView={setActiveView} color="green" />
+          </>
+        )}
+        {/* Mentor não precisa de icones de alunos aqui, pois já terá no lobby */}
+      </div>
+
+      {/* BOTÃO CENTRAL FLUTUANTE CORRIGIDO */}
+      <div className="relative -top-6 z-50">
+         <button 
+            onClick={() => setActiveView(isMentorMode ? 'dashboard' : 'trails')}
+            className={`
+              bg-[#ffce00] border-[#b38f00] 
+              border-b-[8px] text-black 
+              h-20 px-8 rounded-2xl font-black text-xl italic tracking-widest uppercase
+              shadow-xl active:border-b-0 active:translate-y-2 transition-all
+              flex flex-col items-center justify-center
+              hover:brightness-110
+            `}
+         >
+            <span className="drop-shadow-sm text-black">{isMentorMode ? 'LOBBY' : 'JOGAR'}</span>
+            <span className="text-[10px] font-bold opacity-70 -mt-1 text-black">{isMentorMode ? 'HOME' : 'CONTINUAR'}</span>
+         </button>
+      </div>
+
+      <div className="flex gap-1 sm:gap-2">
+        <DockItem icon={Calendar} id="calendar" activeView={activeView} setActiveView={setActiveView} color="red" />
+        <div className="w-px bg-white/10 mx-1"></div>
+        {/* Botão de Trocar Perfil */}
+        <button onClick={toggleMode} className="w-12 h-12 sm:w-14 sm:h-14 bg-[#333] border-b-4 border-black rounded-xl flex items-center justify-center text-white hover:bg-[#444] active:border-b-0 active:translate-y-1 transition-all group relative">
+           <RefreshCcw size={24} strokeWidth={3} className="group-hover:rotate-180 transition-transform duration-500"/>
+           <span className="absolute -top-10 bg-black text-white text-[10px] font-black px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition">TROCAR</span>
+        </button>
+      </div>
+    </div>
+  </div>
+);
+
+const DockItem = ({ icon: Icon, id, activeView, setActiveView, color }) => {
+  const isActive = activeView === id;
+  const bgColors = {
+    blue: isActive ? 'bg-[#0096e6]' : 'bg-[#1e3a8a]',
+    purple: isActive ? 'bg-[#9d4edd]' : 'bg-[#4c1d95]',
+    green: isActive ? 'bg-[#00cc00]' : 'bg-[#14532d]',
+    red: isActive ? 'bg-[#ff3333]' : 'bg-[#7f1d1d]'
+  };
+  const borderColors = {
+    blue: isActive ? 'border-[#006ab3]' : 'border-[#172554]',
+    purple: isActive ? 'border-[#5a189a]' : 'border-[#2e1065]',
+    green: isActive ? 'border-[#008f00]' : 'border-[#052e16]',
+    red: isActive ? 'border-[#b30000]' : 'border-[#450a0a]'
+  };
+
+  return (
+    <button 
+      onClick={() => setActiveView(id)}
+      className={`
+        w-12 h-12 sm:w-14 sm:h-14 rounded-xl border-b-4 
+        flex items-center justify-center text-white 
+        active:border-b-0 active:translate-y-1 transition-all
+        ${bgColors[color]} ${borderColors[color]}
+        ${isActive ? '-translate-y-2 shadow-lg brightness-110' : 'opacity-80 hover:opacity-100 hover:-translate-y-1'}
+      `}
+    >
+      <Icon size={24} strokeWidth={3} />
+    </button>
+  );
+};
+
+// --- MODAL GENÉRICO ---
+const FullScreenModal = ({ isOpen, onClose, title, children, color = "bg-[#131226]" }) => {
+  if (!isOpen) return null;
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in zoom-in duration-200">
+      <div className={`w-full max-w-4xl h-[85vh] ${color} border-4 border-black rounded-3xl flex flex-col shadow-2xl relative overflow-hidden`}>
+        <div className="bg-black/20 p-4 flex justify-between items-center border-b-4 border-black/30">
+           <h2 className="text-2xl sm:text-3xl font-black text-white uppercase italic tracking-wide drop-shadow-md stroke-black">{title}</h2>
+           <button onClick={onClose} className="bg-red-500 border-b-4 border-red-800 text-white p-2 rounded-xl hover:bg-red-400 active:border-b-0 active:translate-y-1 transition">
+              <X size={28} strokeWidth={4}/>
+           </button>
+        </div>
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 custom-scrollbar text-white">
+           {children}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// --- WIDGET DE CHAT ---
+const ChatSidebar = ({ isOpen, onClose }) => {
+  if (!isOpen) return null;
+  return (
+    <div className="fixed inset-y-0 right-0 w-80 bg-[#1e1e2e] border-l-4 border-black z-[60] shadow-2xl transform transition-transform duration-300 ease-out flex flex-col">
+       <div className="bg-[#2c2b4b] p-4 border-b-4 border-black flex justify-between items-center">
+          <span className="font-black text-white uppercase italic">Chat da Guilda</span>
+          <button onClick={onClose}><X className="text-white" strokeWidth={3}/></button>
+       </div>
+       <div className="flex-1 p-4 space-y-4 overflow-y-auto">
+          <div className="flex gap-3">
+             <div className="w-10 h-10 bg-purple-500 rounded-lg border-2 border-black flex-shrink-0"></div>
+             <div className="bg-[#333] p-3 rounded-r-xl rounded-bl-xl border-2 border-black text-sm text-white">
+                <p className="text-xs text-purple-400 font-bold mb-1">Ana Souza</p>
+                Bora focar na Fase 2 hoje?
+             </div>
+          </div>
+       </div>
+       <div className="p-4 bg-[#111] border-t-4 border-black">
+          <div className="flex gap-2">
+             <input className="flex-1 bg-[#333] border-2 border-black rounded-lg px-3 text-white outline-none focus:border-yellow-400" placeholder="Mensagem..." />
+             <button className="bg-green-500 p-2 rounded-lg border-b-4 border-green-700 text-white active:border-b-0 active:translate-y-1"><Send size={20} strokeWidth={3}/></button>
+          </div>
+       </div>
+    </div>
+  );
+};
+
+// --- VIEWS DO LOBBY ---
+
+// LOBBY DO ALUNO
+const StudentLobby = ({ onOpenView }) => (
+  <div className="h-full w-full relative">
+    <div className="absolute inset-0 bg-[#4b0082] bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-indigo-900 via-[#1e1b4b] to-black z-0 overflow-hidden">
+       <div className="absolute top-0 left-0 w-full h-full opacity-20" style={{backgroundImage: 'radial-gradient(#ffffff 1px, transparent 1px)', backgroundSize: '40px 40px'}}></div>
+       <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-10">
+          <div className="relative group">
+             <div className="w-48 h-48 sm:w-64 sm:h-64 bg-gradient-to-b from-yellow-300 to-orange-500 rounded-3xl border-4 border-black shadow-[0_10px_0_0_rgba(0,0,0,0.5)] flex items-center justify-center transform rotate-3 hover:rotate-0 transition-transform duration-300 cursor-pointer" onClick={() => onOpenView('profile')}>
+                <img src={USER_DATA.avatar} className="w-full h-full object-cover rounded-[20px]" alt="Hero"/>
+                <div className="absolute -bottom-6 bg-black text-white px-4 py-1 rounded-lg font-black uppercase tracking-widest border-2 border-white shadow-lg whitespace-nowrap">
+                   Lvl {USER_DATA.level} {USER_DATA.headline}
+                </div>
+             </div>
+          </div>
+          <div className="mt-12 text-center">
+             <h1 className="text-4xl sm:text-6xl font-black text-white uppercase italic drop-shadow-[4px_4px_0_#000] stroke-black">
+                {USER_DATA.name.split(' ')[0]}
+             </h1>
+             <div className="flex items-center justify-center gap-2 mt-2 bg-black/40 px-4 py-2 rounded-full border-2 border-white/20 backdrop-blur-sm">
+                <div className="w-3 h-3 rounded-full bg-green-500 animate-pulse"></div>
+                <span className="text-green-400 font-bold uppercase text-sm">Online</span>
+                <span className="text-white/50">|</span>
+                <span className="text-white font-bold uppercase text-sm">Trilha Ignição: Fase 1</span>
+             </div>
+          </div>
+       </div>
+    </div>
+
+    {/* Student Tools - Floating Right */}
+    <div className="absolute right-4 top-20 flex flex-col gap-4 z-20">
+       <button onClick={() => onOpenView('news')} className="w-16 h-14 bg-white border-b-4 border-gray-400 rounded-xl flex flex-col items-center justify-center text-black font-black text-[10px] hover:scale-105 transition shadow-lg group">
+          <Bell size={24} className="group-hover:rotate-12 transition"/>
+          NEWS
+          {USER_DATA.notifications > 0 && <div className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 rounded-full border-2 border-white text-white flex items-center justify-center text-xs animate-bounce">{USER_DATA.notifications}</div>}
+       </button>
+       <button onClick={() => onOpenView('social')} className="w-16 h-14 bg-green-500 border-b-4 border-green-700 rounded-xl flex flex-col items-center justify-center text-white font-black text-[10px] hover:scale-105 transition shadow-lg group">
+          <Users size={24} className="group-hover:scale-110 transition"/>
+          CLUB
+       </button>
+       <button onClick={() => onOpenView('leaderboard')} className="w-16 h-14 bg-purple-500 border-b-4 border-purple-700 rounded-xl flex flex-col items-center justify-center text-white font-black text-[10px] hover:scale-105 transition shadow-lg group">
+          <Trophy size={24} className="text-yellow-300 group-hover:-translate-y-1 transition"/>
+          RANK
+       </button>
+    </div>
+
+    <div className="absolute left-4 top-20 z-20 hidden md:block">
+       <div className="bg-[#1e1e2e]/90 border-4 border-black rounded-xl p-3 w-64 shadow-xl backdrop-blur-sm">
+          <div className="flex items-center gap-2 mb-2 border-b-2 border-white/10 pb-2">
+             <Calendar className="text-yellow-400" size={20}/>
+             <span className="font-black text-white text-sm uppercase">Eventos</span>
+          </div>
+          <div className="space-y-2">
+             <div className="bg-[#2c2b4b] p-2 rounded border-2 border-black flex gap-3 items-center">
+                <div className="bg-purple-600 p-1 rounded border border-black"><Video size={16} className="text-white"/></div>
+                <div><p className="text-xs font-bold text-white">Code Review</p><p className="text-[10px] text-gray-400">Hoje, 15:00</p></div>
+             </div>
+          </div>
+       </div>
+    </div>
+  </div>
+);
+
+// LOBBY DO MENTOR
+const MentorLobby = ({ onOpenView, onOpenMentees }) => (
+  <div className="h-full w-full relative">
+    <div className="absolute inset-0 bg-[#064e3b] bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-emerald-900 via-[#022c22] to-black z-0 overflow-hidden">
+       <div className="absolute top-0 left-0 w-full h-full opacity-20" style={{backgroundImage: 'radial-gradient(#ffffff 1px, transparent 1px)', backgroundSize: '40px 40px'}}></div>
+       <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-10">
+          <div className="relative group">
+             <div className="w-48 h-48 sm:w-64 sm:h-64 bg-gradient-to-b from-emerald-400 to-green-600 rounded-3xl border-4 border-black shadow-[0_10px_0_0_rgba(0,0,0,0.5)] flex items-center justify-center transform -rotate-3 hover:rotate-0 transition-transform duration-300 cursor-pointer">
+                <img src={MENTOR_DATA.avatar} className="w-full h-full object-cover rounded-[20px]" alt="Mentor Hero"/>
+                <div className="absolute -bottom-6 bg-black text-white px-4 py-1 rounded-lg font-black uppercase tracking-widest border-2 border-emerald-500 shadow-lg whitespace-nowrap">
+                   {MENTOR_DATA.headline}
+                </div>
+             </div>
+          </div>
+          <div className="mt-12 text-center">
+             <h1 className="text-4xl sm:text-6xl font-black text-white uppercase italic drop-shadow-[4px_4px_0_#000] stroke-black">
+                {MENTOR_DATA.name}
+             </h1>
+             <div className="flex items-center justify-center gap-2 mt-2 bg-black/40 px-4 py-2 rounded-full border-2 border-emerald-500/50 backdrop-blur-sm">
+                <div className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></div>
+                <span className="text-emerald-400 font-bold uppercase text-sm">Disponível</span>
+                <span className="text-white/50">|</span>
+                <span className="text-white font-bold uppercase text-sm">{MENTOR_DATA.totalMentees} Alunos Ativos</span>
+             </div>
+          </div>
+       </div>
+    </div>
+
+    {/* Mentor Tools - Floating Right (Ferramentas Espalhadas) */}
+    <div className="absolute right-4 top-20 flex flex-col gap-4 z-20">
+       <button onClick={onOpenMentees} className="w-16 h-14 bg-white border-b-4 border-gray-400 rounded-xl flex flex-col items-center justify-center text-black font-black text-[10px] hover:scale-105 transition shadow-lg group">
+          <Users size={24} className="group-hover:scale-110 transition text-emerald-600"/>
+          CLÃ
+          <div className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 rounded-full border-2 border-white text-white flex items-center justify-center text-xs font-bold shadow-sm">12</div>
+       </button>
+       {/* CORREÇÃO: Botão RISCO agora abre o modal 'alerts' corretamente */}
+       <button onClick={() => onOpenView('alerts')} className="w-16 h-14 bg-red-500 border-b-4 border-red-700 rounded-xl flex flex-col items-center justify-center text-white font-black text-[10px] hover:scale-105 transition shadow-lg group">
+          <AlertTriangle size={24} className="group-hover:rotate-12 transition text-yellow-300"/>
+          RISCO
+          <div className="absolute -top-2 -right-2 w-6 h-6 bg-yellow-400 text-black rounded-full border-2 border-black flex items-center justify-center text-xs font-bold animate-pulse">3</div>
+       </button>
+       <button onClick={() => onOpenView('reports')} className="w-16 h-14 bg-blue-500 border-b-4 border-blue-700 rounded-xl flex flex-col items-center justify-center text-white font-black text-[10px] hover:scale-105 transition shadow-lg group">
+          <FileText size={24} className="group-hover:-translate-y-1 transition"/>
+          RELAT
+       </button>
+    </div>
+
+    {/* Mentor Left - Agenda */}
+    <div className="absolute left-4 top-20 z-20 hidden md:block">
+       <div className="bg-[#1e1e2e]/90 border-4 border-black rounded-xl p-3 w-64 shadow-xl backdrop-blur-sm">
+          <div className="flex items-center gap-2 mb-2 border-b-2 border-white/10 pb-2">
+             <Calendar className="text-emerald-400" size={20}/>
+             <span className="font-black text-white text-sm uppercase">Próx. Sessão</span>
+          </div>
+          <div className="space-y-2">
+             <div className="bg-[#2c2b4b] p-2 rounded border-2 border-black flex gap-3 items-center">
+                <div className="bg-purple-600 p-1 rounded border border-black"><Video size={16} className="text-white"/></div>
+                <div><p className="text-xs font-bold text-white">Mentoria 1:1</p><p className="text-[10px] text-gray-400">João Silva • 15h</p></div>
+             </div>
+          </div>
+       </div>
+    </div>
+  </div>
+);
+
+// --- PAINEL DO MENTOR (Detalhes no Modal) ---
+const MentorPanelModal = ({ isOpen, onClose, mentee }) => {
+  const [activePhase, setActivePhase] = useState(2);
+  const [noteInput, setNoteInput] = useState("");
+  const [notes, setNotes] = useState(mentee?.phases?.[0]?.notes || []);
+
+  const addNote = () => {
+    if(!noteInput.trim()) return;
+    setNotes([{id: Date.now(), text: noteInput, date: "Agora"}, ...notes]);
+    setNoteInput("");
+  };
+
+  if (!mentee) return null;
+
+  return (
+    <FullScreenModal isOpen={isOpen} onClose={onClose} title={`Gestão: ${mentee.name}`} color="bg-[#1a1a2e]">
+       {/* CORREÇÃO: Texto branco forçado para o painel */}
+       <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-6 h-full text-white">
+          
+          <div className="bg-[#1e1b4b] rounded-2xl border-2 border-[#4c1d95] p-4 shadow-sm h-fit">
+             <div className="flex flex-col items-center mb-4">
+                <img src={mentee.avatar} className="w-24 h-24 rounded-full border-4 border-blue-500 bg-gray-100 mb-2"/>
+                <h3 className="font-black text-xl text-center uppercase">{mentee.name}</h3>
+                <div className="flex gap-2 mt-2">
+                   {getRiskBadge(mentee.lastActivity)}
+                   <span className="bg-blue-900 text-blue-300 px-2 py-0.5 rounded text-xs font-bold border border-blue-500">{mentee.phase}</span>
+                </div>
+             </div>
+             
+             <div className="space-y-4">
+                <div>
+                   <p className="text-xs font-bold text-gray-400 uppercase mb-1">Progresso</p>
+                   <div className="w-full bg-gray-700 rounded-full h-3 overflow-hidden border border-gray-600">
+                      <div className="bg-green-500 h-full" style={{width: '35%'}}></div>
+                   </div>
+                   <p className="text-right text-xs font-bold text-green-400 mt-1">35%</p>
+                </div>
+             </div>
+          </div>
+
+          <div className="space-y-6">
+             <div className="bg-[#1e1b4b] p-4 rounded-2xl border-2 border-[#4c1d95] shadow-sm">
+                <h4 className="font-black text-lg text-white uppercase mb-4 flex items-center gap-2"><Target className="text-red-500"/> Metas SMART</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                   {mentee.smartGoals.map(goal => (
+                      <div key={goal.id} className="bg-[#0f172a] p-3 rounded-xl border border-gray-700 hover:border-blue-500 transition cursor-pointer">
+                         <div className="flex justify-between items-start mb-2">
+                            <span className="font-bold text-blue-400">{goal.s}</span>
+                            {goal.status === 'completed' ? <CheckCircle size={16} className="text-green-500"/> : <Clock size={16} className="text-yellow-500"/>}
+                         </div>
+                         <p className="text-xs text-gray-400"><strong>M:</strong> {goal.m} | <strong>T:</strong> {goal.t}</p>
+                      </div>
+                   ))}
+                   <button className="border-2 border-dashed border-gray-600 rounded-xl flex items-center justify-center text-gray-500 font-bold text-sm hover:bg-[#2e1065] min-h-[80px]">+ Nova Meta</button>
+                </div>
+             </div>
+
+             <div className="bg-[#1e1b4b] p-4 rounded-2xl border-2 border-[#4c1d95] shadow-sm">
+                <h4 className="font-black text-lg text-white uppercase mb-4 flex items-center gap-2"><Map className="text-purple-500"/> Acompanhamento de Fases</h4>
+                <div className="space-y-4">
+                   {mentee.phases.map(phase => (
+                      <div key={phase.id} className={`border-2 rounded-xl overflow-hidden ${phase.id === activePhase ? 'border-blue-500' : 'border-gray-700'}`}>
+                         <div className={`p-3 flex justify-between items-center cursor-pointer ${phase.id === activePhase ? 'bg-blue-900/30' : 'bg-[#0f172a]'}`} onClick={() => setActivePhase(phase.id)}>
+                            <span className="font-bold text-gray-200">{phase.title}</span>
+                            {phase.completed ? <CheckCircle size={20} className="text-green-500"/> : <ChevronDown size={20} className="text-gray-400"/>}
+                         </div>
+                         
+                         {phase.id === activePhase && (
+                            <div className="p-4 bg-[#0f172a] space-y-4">
+                               <div className="flex gap-2 mb-2">
+                                  {TEMPLATES_NOTAS.map((t, i) => (
+                                     <button key={i} onClick={() => setNoteInput(t.text)} className="text-xs bg-[#1e293b] px-2 py-1 rounded border border-gray-600 hover:bg-[#334155] font-medium text-gray-300">+ {t.label}</button>
+                                  ))}
+                               </div>
+                               <div className="flex gap-2">
+                                  <textarea 
+                                     value={noteInput} 
+                                     onChange={(e) => setNoteInput(e.target.value)} 
+                                     className="flex-1 p-2 border border-gray-600 bg-[#1e293b] rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none text-white placeholder-gray-500" 
+                                     placeholder="Adicionar anotação privada..."
+                                     rows={3}
+                                  />
+                                  <button onClick={addNote} className="bg-blue-600 text-white px-4 rounded-lg font-bold hover:bg-blue-700"><Send size={20}/></button>
+                               </div>
+                               <div className="space-y-2 mt-4">
+                                  {notes.map(note => (
+                                     <div key={note.id} className="bg-yellow-900/20 p-3 rounded-lg border border-yellow-700/50 text-sm">
+                                        <p className="text-gray-200">{note.text}</p>
+                                        <p className="text-[10px] text-yellow-500/70 text-right mt-1">{note.date}</p>
+                                     </div>
+                                  ))}
+                               </div>
+                            </div>
+                         )}
+                      </div>
+                   ))}
+                </div>
+             </div>
+          </div>
+       </div>
+    </FullScreenModal>
+  );
+};
+
+// --- LISTA DE ALUNOS (AGORA UM MODAL ACESSADO PELO LOBBY DO MENTOR) ---
+const MenteeListModal = ({ isOpen, onClose, onSelectMentee }) => {
+   if (!isOpen) return null;
+   return (
+      <FullScreenModal isOpen={isOpen} onClose={onClose} title="Meu Clã (Alunos)" color="bg-[#1a1a2e]">
+         <div className="space-y-4">
+             <div className="flex justify-between items-center bg-[#252540] p-4 rounded-2xl border-2 border-[#4c1d95]">
+                <div>
+                   <h3 className="text-white font-black text-xl">Total: {MENTOR_DATA.totalMentees}</h3>
+                   <p className="text-gray-400 text-sm">3 Alertas de Inatividade</p>
+                </div>
+                <ArcadeButton color="green" size="md" icon={Plus}>Adicionar</ArcadeButton>
+             </div>
+             
+             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {MENTEES_LIST.map(mentee => (
+                   <div key={mentee.id} onClick={() => onSelectMentee(mentee.id)} className="bg-[#2e1065] border-2 border-[#4c1d95] rounded-2xl p-4 flex flex-col items-center hover:bg-[#3b1b7a] hover:scale-[1.02] transition cursor-pointer shadow-xl relative overflow-hidden group">
+                      <div className="absolute top-0 right-0 p-2 opacity-50"><MoreHorizontal className="text-white"/></div>
+                      <img src={mentee.avatar} className="w-20 h-20 rounded-xl border-4 border-black bg-white mb-3 shadow-lg group-hover:rotate-3 transition-transform" />
+                      {getRiskBadge(mentee.lastActivity)}
+                      <h3 className="text-white font-black text-lg uppercase mt-2 text-center">{mentee.name}</h3>
+                      <p className="text-gray-400 font-bold text-xs">{mentee.phase}</p>
+                      <div className="w-full mt-4 border-t border-white/10 pt-3 flex justify-between items-center text-xs font-bold text-gray-300">
+                         <span>XP: 1250</span>
+                         <span className="text-emerald-400">Ver Perfil {'>'}</span>
+                      </div>
+                   </div>
+                ))}
+             </div>
+         </div>
+      </FullScreenModal>
+   )
+}
+
+// --- COMPONENTE PRINCIPAL ---
+
+const App = () => {
+  const [activeView, setActiveView] = useState('dashboard'); 
+  const [isMentorMode, setIsMentorMode] = useState(false);
+  
+  const [isChatOpen, setChatOpen] = useState(false);
+  const [modalContent, setModalContent] = useState(null); 
+  const [selectedMenteeForPanel, setSelectedMenteeForPanel] = useState(null);
+  const [showMenteeList, setShowMenteeList] = useState(false);
+
+  const openModal = (content) => setModalContent(content);
+  const closeModal = () => setModalContent(null);
+
+  const toggleMode = () => {
+     setIsMentorMode(!isMentorMode);
+     setModalContent(null);
+     setShowMenteeList(false);
+     setSelectedMenteeForPanel(null);
+  }
+
+  return (
+    <div className="h-screen w-screen bg-black overflow-hidden font-sans select-none">
+      
+      {/* Top Bar (Adaptável) */}
+      <div className="absolute top-0 left-0 right-0 p-4 z-40 flex justify-between pointer-events-none">
+         <div className="flex items-start gap-2 pointer-events-auto" onClick={() => openModal('profile')}>
+            <div className="relative group cursor-pointer transition-transform active:scale-95">
+               <div className={`w-14 h-14 ${isMentorMode ? 'bg-emerald-600' : 'bg-blue-600'} rounded-lg border-2 border-black flex items-center justify-center overflow-hidden`}>
+                  <img src={isMentorMode ? MENTOR_DATA.avatar : USER_DATA.avatar} className="w-full h-full object-cover" />
+               </div>
+               <div className={`absolute -bottom-2 -right-2 ${isMentorMode ? 'bg-emerald-500' : 'bg-[#0096e6]'} border-2 border-black text-white text-[10px] font-black px-1.5 rounded`}>
+                  {isMentorMode ? 'MESTRE' : `LVL ${USER_DATA.level}`}
+               </div>
+            </div>
+            <div className="bg-black/40 backdrop-blur-md rounded-lg p-1 px-3 border-2 border-black/20 mt-1">
+               <p className="text-white font-black text-sm uppercase stroke-black">{isMentorMode ? MENTOR_DATA.name : USER_DATA.name}</p>
+               <div className="h-2 bg-black/50 rounded-full mt-1 overflow-hidden border border-white/10 w-24">
+                  <div className={`h-full bg-gradient-to-r ${isMentorMode ? 'from-emerald-400 to-green-600' : 'from-cyan-400 to-blue-500'}`} style={{width: isMentorMode ? '100%' : `${USER_DATA.totalProgress}%`}}></div>
+               </div>
+            </div>
+         </div>
+
+         <div className="flex items-start gap-2 pointer-events-auto">
+            {!isMentorMode && (
+               <>
+                  <ResourcePill icon={Trophy} value={USER_DATA.xp} color="bg-yellow-500" />
+                  <ResourcePill icon={Zap} value={USER_DATA.streak} color="bg-orange-500" />
+               </>
+            )}
+            {isMentorMode && (
+               <ResourcePill icon={Users} value={MENTOR_DATA.totalMentees} color="bg-emerald-500" />
+            )}
+            <button onClick={() => setChatOpen(true)} className="bg-[#1e1e2e] border-2 border-black p-2 rounded-lg text-white hover:bg-[#2e2e3e] active:scale-95 transition relative">
+               <MessageSquare size={24} />
+               <Badge count={2} />
+            </button>
+         </div>
+      </div>
+
+      {/* Main Views */}
+      {isMentorMode ? (
+         <MentorLobby 
+            onOpenView={openModal} 
+            onOpenMentees={() => setShowMenteeList(true)}
+         />
+      ) : (
+         <StudentLobby onOpenView={openModal} />
+      )}
+
+      {/* Navigation Dock */}
+      <NavbarDock 
+         activeView={activeView} 
+         setActiveView={(view) => { if(view === 'dashboard') closeModal(); else openModal(view); }} 
+         isMentorMode={isMentorMode} 
+         toggleMode={toggleMode} 
+      />
+
+      {/* Modais Comuns e Específicos */}
+      <MenteeListModal 
+         isOpen={showMenteeList} 
+         onClose={() => setShowMenteeList(false)} 
+         onSelectMentee={(id) => { setShowMenteeList(false); setSelectedMenteeForPanel(MENTEE_DETAIL_MOCK); }}
+      />
+
+      {/* Modal de Risco (Novo) */}
+      <FullScreenModal isOpen={modalContent === 'alerts'} onClose={closeModal} title="Alunos em Risco" color="bg-[#1a1a2e]">
+         <div className="space-y-4">
+            {MENTEES_LIST.filter(m => calculateDaysInactive(m.lastActivity) >= 3).map(mentee => (
+               <div key={mentee.id} onClick={() => { closeModal(); setSelectedMenteeForPanel(MENTEE_DETAIL_MOCK); }} className="bg-red-900/20 border-2 border-red-500 rounded-2xl p-4 flex items-center justify-between cursor-pointer hover:bg-red-900/40 transition">
+                  <div className="flex items-center gap-4">
+                     <img src={mentee.avatar} className="w-16 h-16 rounded-xl border-2 border-red-500" />
+                     <div>
+                        <h3 className="text-white font-black text-lg uppercase">{mentee.name}</h3>
+                        <p className="text-red-400 text-sm font-bold flex items-center gap-2"><AlertTriangle size={14}/> {calculateDaysInactive(mentee.lastActivity)} dias inativo</p>
+                     </div>
+                  </div>
+                  <ArcadeButton color="red" size="sm">Ver</ArcadeButton>
+               </div>
+            ))}
+            {MENTEES_LIST.filter(m => calculateDaysInactive(m.lastActivity) >= 3).length === 0 && (
+               <div className="text-center text-gray-500 py-10">Nenhum aluno em risco! 🎉</div>
+            )}
+         </div>
+      </FullScreenModal>
+
+      <FullScreenModal isOpen={modalContent === 'trails'} onClose={closeModal} title="Mapa de Trilhas">
+         <div className="grid grid-cols-1 gap-6">
+            <div className="bg-[#1e1b4b] border-4 border-[#4c1d95] rounded-3xl p-6 relative overflow-hidden">
+               <div className="flex justify-between items-end mb-8 relative z-10">
+                  <div><h2 className="text-3xl font-black text-white uppercase italic">Trilha Ignição</h2><p className="text-blue-200 font-bold">Fundamentos</p></div>
+                  <div className="bg-black/40 px-4 py-2 rounded-xl border-2 border-cyan-500"><span className="text-cyan-400 font-black text-xl">25%</span></div>
+               </div>
+               <div className="space-y-4 relative z-10">
+                  {TRAILS_DATABASE.ignicao.phases.map((phase, idx) => (
+                     <div key={phase.id} className={`bg-[#2e1065] border-4 ${phase.locked ? 'border-gray-700 opacity-60' : 'border-cyan-600'} rounded-2xl p-4 flex items-center gap-4`}>
+                        <div className={`w-16 h-16 rounded-xl border-4 border-black flex items-center justify-center text-2xl font-black ${phase.locked ? 'bg-gray-600 text-gray-400' : 'bg-cyan-500 text-white'}`}>{phase.locked ? <Lock/> : idx + 1}</div>
+                        <div className="flex-1"><h3 className="text-white font-black text-xl uppercase">{phase.name}</h3><p className="text-gray-400 text-sm font-bold">{phase.missions.length} Missões</p></div>
+                        {!phase.locked && <ArcadeButton color="green" size="sm">JOGAR</ArcadeButton>}
+                     </div>
+                  ))}
+               </div>
+            </div>
+         </div>
+      </FullScreenModal>
+
+      <FullScreenModal isOpen={modalContent === 'bushido'} onClose={closeModal} title="Bushido Bem-Estar">
+         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {BUSHIDO_DATABASE.map(area => (
+               <div key={area.id} className={`bg-white text-gray-900 rounded-2xl border-4 border-black p-4 shadow-lg`}>
+                  <div className={`p-3 rounded-xl ${area.bg} border-2 border-black inline-block mb-3`}>{React.createElement(area.icon, {size: 32, className: area.color.replace('text-', 'text-')})}</div>
+                  <h3 className="font-black text-2xl uppercase mb-1">{area.area}</h3>
+                  <div className="space-y-2">{area.tarefas.map(task => (<div key={task.id} className="flex items-center gap-3 p-2 bg-gray-100 rounded-lg border border-gray-300 cursor-pointer hover:bg-gray-200"><Square size={20} className="text-gray-400"/><span className="font-bold text-sm">{task.text}</span></div>))}</div>
+               </div>
+            ))}
+         </div>
+      </FullScreenModal>
+
+      <FullScreenModal isOpen={modalContent === 'portfolio'} onClose={closeModal} title="Minha Vitrine">
+         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {USER_DATA.projects.map((proj, i) => (
+               <div key={i} className="bg-[#1e1b4b] border-4 border-[#4c1d95] rounded-2xl p-6 hover:scale-[1.02] transition cursor-pointer group">
+                  <div className="flex justify-between items-start mb-4"><div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center border-2 border-black"><Briefcase className="text-white"/></div><ExternalLink className="text-gray-400 group-hover:text-white"/></div>
+                  <h3 className="text-white font-black text-xl uppercase mb-2">{proj.name}</h3><p className="text-gray-400 font-bold text-sm">{proj.desc}</p>
+               </div>
+            ))}
+         </div>
+      </FullScreenModal>
+      
+      <FullScreenModal isOpen={modalContent === 'calendar'} onClose={closeModal} title="Agenda de Batalha">
+         <div className="max-w-xl mx-auto">
+            <CalendarWidget />
+         </div>
+      </FullScreenModal>
+
+      {selectedMenteeForPanel && <MentorPanelModal isOpen={!!selectedMenteeForPanel} onClose={() => setSelectedMenteeForPanel(null)} mentee={selectedMenteeForPanel}/>}
+      <ChatSidebar isOpen={isChatOpen} onClose={() => setChatOpen(false)} />
+    </div>
+  );
+};
+
+export default App;

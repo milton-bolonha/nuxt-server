@@ -1,4 +1,4 @@
-import { frcmpRules } from "../data/federal-rules-frcmp";
+import frcmpData from "../data/federal-rules-frcmp.json";
 
 export default defineEventHandler(async (event) => {
     validateApiAccess(event, "federal-rules/frcmp");
@@ -7,7 +7,7 @@ export default defineEventHandler(async (event) => {
         return [
             {
                 label: "Federal Rules of Criminal Procedure",
-                data: frcmpRules.map((rule) => ({
+                data: frcmpData.frcmpRules.map((rule) => ({
                     title: rule.number,
                     subtitle: rule.title,
                     content: rule.description,

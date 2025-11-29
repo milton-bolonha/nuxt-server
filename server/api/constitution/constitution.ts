@@ -1,5 +1,5 @@
 // Importar dados estáticos da pasta server/data
-import { constitutionArticles } from "../data/constitution";
+import constitutionData from "../data/constitution.json";
 
 export default defineEventHandler(async (event) => {
     console.log("🔍 [DEBUG] Constitution API called (static data)");
@@ -10,7 +10,7 @@ export default defineEventHandler(async (event) => {
         console.log("✅ [DEBUG] API access validated");
 
         // Formatar dados para o formato esperado pela API
-        const result = constitutionArticles.map((article) => ({
+        const result = constitutionData.articles.map((article) => ({
             title: article.title,
             description: article.summary,
             hasArticle: true,

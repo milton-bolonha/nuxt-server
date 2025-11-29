@@ -1,10 +1,10 @@
-import { executiveOrders } from "../data/executive-orders";
+import executiveData from "../data/executive-orders.json";
 
 export default defineEventHandler(async (event) => {
     validateApiAccess(event, "laws/eo");
 
     try {
-        return executiveOrders.map((eo) => ({
+        return executiveData.executiveOrders.map((eo) => ({
             title: eo.number,
             subtitle: eo.title,
             content: eo.description,
