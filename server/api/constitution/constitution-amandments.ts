@@ -1,8 +1,10 @@
-// Importar dados estáticos da pasta server/data
-import constitutionData from "../../data/constitution-full.json";
+// Importar dados diretamente de server/data
+import { constitutionAmendments } from "../../data/constitution";
 
 export default defineEventHandler(async (event) => {
-    console.log("🔍 [DEBUG] Constitution Amendments API called (static data)");
+    console.log(
+        "🔍 [DEBUG] Constitution Amendments API called (direct TypeScript import)"
+    );
 
     try {
         console.log("🔐 [DEBUG] Validating API access...");
@@ -10,14 +12,12 @@ export default defineEventHandler(async (event) => {
         console.log("✅ [DEBUG] API access validated");
 
         // Formatar dados para o formato esperado pela API
-        const result = constitutionData.constitutionAmendments.map(
-            (amendment) => ({
-                title: amendment.title,
-                content: amendment.content,
-                description: amendment.summary,
-                hasArticle: false,
-            })
-        );
+        const result = constitutionAmendments.map((amendment) => ({
+            title: amendment.title,
+            content: amendment.content,
+            description: amendment.summary,
+            hasArticle: false,
+        }));
 
         console.log(
             "📊 [DEBUG] Returning",

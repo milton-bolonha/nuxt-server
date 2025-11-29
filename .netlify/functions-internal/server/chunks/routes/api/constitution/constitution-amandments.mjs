@@ -1,6 +1,6 @@
 import { d as defineEventHandler, c as createError } from '../../../_/nitro.mjs';
 import { v as validateApiAccess } from '../../../_/validateApiAccess.mjs';
-import { p as prisma } from '../../../_/db.mjs';
+import { c as constitutionAmendments } from '../../../_/constitution.mjs';
 import 'node:http';
 import 'node:https';
 import 'node:events';
@@ -10,25 +10,33 @@ import 'node:path';
 import 'node:crypto';
 import '../../../_/apiTokens.mjs';
 import 'crypto';
-import '@prisma/client';
 
 const constitutionAmandments = defineEventHandler(async (event) => {
-  validateApiAccess(event, "constitution/constitution-amandments");
+  console.log(
+    "\u{1F50D} [DEBUG] Constitution Amendments API called (direct TypeScript import)"
+  );
   try {
-    const amendments = await prisma.constitutionAmendment.findMany({
-      orderBy: { number: "asc" }
-    });
-    return amendments.map((amendment) => ({
+    console.log("\u{1F510} [DEBUG] Validating API access...");
+    validateApiAccess(event, "constitution/constitution-amandments");
+    console.log("\u2705 [DEBUG] API access validated");
+    const result = constitutionAmendments.map((amendment) => ({
       title: amendment.title,
       content: amendment.content,
       description: amendment.summary,
       hasArticle: false
     }));
+    console.log(
+      "\u{1F4CA} [DEBUG] Returning",
+      result.length,
+      "constitution amendments"
+    );
+    return result;
   } catch (error) {
-    console.error("Error fetching constitution amendments:", error);
+    console.error("\u274C [ERROR] Constitution Amendments API failed:", error);
     throw createError({
       statusCode: 500,
-      message: "Failed to fetch constitution amendments"
+      statusMessage: "Failed to fetch constitution amendments",
+      cause: error.message
     });
   }
 });

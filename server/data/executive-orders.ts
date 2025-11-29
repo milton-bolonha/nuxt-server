@@ -1,16 +1,5 @@
-import { d as defineEventHandler, c as createError } from '../../../_/nitro.mjs';
-import { v as validateApiAccess } from '../../../_/validateApiAccess.mjs';
-import 'node:http';
-import 'node:https';
-import 'node:events';
-import 'node:buffer';
-import 'node:fs';
-import 'node:path';
-import 'node:crypto';
-import '../../../_/apiTokens.mjs';
-import 'crypto';
 
-const executiveOrders = [
+export const executiveOrders = [
   { number: "EO-01-22", title: "Executive Order 01-22", description: "Revokes all prior Executive Orders except those mandating department closures, as part of an effort to prevent government abuse and streamline regulations." },
   { number: "EO10", title: "Merging BOP and USMS", description: "Merges the Bureau of Prisons into the U.S. Marshals Service, transferring all prison management, inmate safety, and rehabilitation responsibilities while maintaining USMS's existing duties." },
   { number: "EO12", title: "Fair Recruitment System", description: "Establishes uniform standards for federal hiring that prohibit discrimination and support new community members, requiring transparency in employment decisions and limiting experience requirements for entry-level positions." },
@@ -29,7 +18,7 @@ const executiveOrders = [
   { number: "EO49-002", title: "Declaration of Martial Law", description: "Declares martial law in DC due to Zombie Outbreak, establishes Joint Containment Task Force, and federalizes National Guard under DoD command with suspended habeas corpus." },
   { number: "EO51-1", title: "Executive Order 51-1", description: "Abolishes and prohibits Executive Branch Blacklists, revoking all existing blacklists and requiring proper investigations through internal affairs for employee misconduct." },
   { number: "EO51-2", title: "U.S. Code Commission", description: "This executive order establishes a Commission to review and adapt the U.S. Code for ROBLOX." },
-  { number: "EO51-3", title: "Executive Order 51-3", description: 'Creates "The Executive Branch" server for federal employee communications, managed by the President and delegates for announcements and coordination.' },
+  { number: "EO51-3", title: "Executive Order 51-3", description: "Creates \"The Executive Branch\" server for federal employee communications, managed by the President and delegates for announcements and coordination." },
   { number: "EO51-4", title: "Executive Order 51-4", description: "Establishes a commission chaired by White House Counsel to review pardon and clemency requests, focusing on minor crimes and potential procedural issues." },
   { number: "EO51-5", title: "Executive Order 51-5", description: "Establishes the American Job Center under Commerce and Labor to assist job seekers, creating a public-private partnership system for federal and private sector employment." },
   { number: "EO51-6", title: "Executive Order 51-6", description: "Prohibits federal agencies from using Cipher service, mandating development of government-owned background check systems by Intelligence Community instead." },
@@ -38,25 +27,4 @@ const executiveOrders = [
   { number: "EOHC", title: "High Command", description: "Limits federal officials to holding maximum of 2 High Command positions, with special restrictions for Department Directors and Cabinet members, excluding military and oversight agencies." },
   { number: "EOSWAT", title: "SWAT and FPS", description: "Orders shutdown of Special Weapons and Tactics teams and Federal Protection Service, transferring employees to Homeland Security federal agency." },
   { number: "EOVA", title: "Veterans Administration", description: "Dissolves Department of Veterans Affairs and establishes Veterans Affairs Administration under Department of Defense control, maintaining veteran support services." }
-];
-
-const eo = defineEventHandler(async (event) => {
-  validateApiAccess(event, "laws/eo");
-  try {
-    return executiveOrders.map((eo) => ({
-      title: eo.number,
-      subtitle: eo.title,
-      content: eo.description,
-      excerp: eo.description
-    }));
-  } catch (error) {
-    console.error("Error fetching executive orders:", error);
-    throw createError({
-      statusCode: 500,
-      message: "Failed to fetch executive orders"
-    });
-  }
-});
-
-export { eo as default };
-//# sourceMappingURL=eo.mjs.map
+]

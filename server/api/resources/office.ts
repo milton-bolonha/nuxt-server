@@ -1,10 +1,10 @@
-import officesData from "../../data/offices.json";
+import { offices } from "../../data/offices";
 
 export default defineEventHandler(async (event) => {
     validateApiAccess(event, "resources/office");
 
     try {
-        const grouped = officesData.offices.reduce((acc: any, office) => {
+        const grouped = offices.reduce((acc: any, office) => {
             const existing = acc.find((g: any) => g.label === office.category);
             if (existing) {
                 existing.data.push({
@@ -34,4 +34,3 @@ export default defineEventHandler(async (event) => {
         });
     }
 });
-

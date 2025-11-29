@@ -1,4 +1,4 @@
-import frcpData from "../../data/federal-rules-frcp.json";
+import { frcpRules } from "../../data/federal-rules-frcp";
 
 export default defineEventHandler(async (event) => {
     validateApiAccess(event, "federal-rules/frcp");
@@ -7,7 +7,7 @@ export default defineEventHandler(async (event) => {
         return [
             {
                 label: "Federal Rules of Civil Procedure",
-                data: frcpData.map((rule) => ({
+                data: frcpRules.map((rule) => ({
                     title: rule.number,
                     subtitle: rule.title,
                     content: rule.description,

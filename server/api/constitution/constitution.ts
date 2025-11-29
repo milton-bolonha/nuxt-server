@@ -1,8 +1,10 @@
-// Importar dados estáticos da pasta server/data
-import constitutionData from "../../data/constitution.json";
+// Importar dados diretamente de server/data
+import { constitutionArticles } from "../../data/constitution";
 
 export default defineEventHandler(async (event) => {
-    console.log("🔍 [DEBUG] Constitution API called (static data)");
+    console.log(
+        "🔍 [DEBUG] Constitution API called (direct TypeScript import)"
+    );
 
     try {
         console.log("🔐 [DEBUG] Validating API access...");
@@ -10,7 +12,7 @@ export default defineEventHandler(async (event) => {
         console.log("✅ [DEBUG] API access validated");
 
         // Formatar dados para o formato esperado pela API
-        const result = constitutionData.articles.map((article) => ({
+        const result = constitutionArticles.map((article) => ({
             title: article.title,
             description: article.summary,
             hasArticle: true,
@@ -27,7 +29,7 @@ export default defineEventHandler(async (event) => {
         console.error("❌ [ERROR] Constitution API failed:", error);
         throw createError({
             statusCode: 500,
-            message: "Failed to fetch constitution articles",
+            statusMessage: "Failed to fetch constitution articles",
             cause: error.message,
         });
     }

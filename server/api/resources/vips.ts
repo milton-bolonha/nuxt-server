@@ -1,10 +1,10 @@
-import vipsData from "../../data/vips.json";
+import { vips } from "../../data/vips";
 
 export default defineEventHandler(async (event) => {
     validateApiAccess(event, "resources/vips");
 
     try {
-        return vipsData.vips;
+        return vips;
     } catch (error) {
         console.error("Error fetching VIPs:", error);
         throw createError({
@@ -13,4 +13,3 @@ export default defineEventHandler(async (event) => {
         });
     }
 });
-

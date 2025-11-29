@@ -1,10 +1,10 @@
-import filesData from "../../data/files.json";
+import { files } from "../../data/files";
 
 export default defineEventHandler(async (event) => {
     validateApiAccess(event, "resources/files");
 
     try {
-        return filesData.files.map((file) => ({
+        return files.map((file) => ({
             title: file.title,
             link: file.fileUrl,
         }));
@@ -16,4 +16,3 @@ export default defineEventHandler(async (event) => {
         });
     }
 });
-

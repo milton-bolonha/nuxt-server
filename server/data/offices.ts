@@ -1,16 +1,5 @@
-import { d as defineEventHandler, c as createError } from '../../../_/nitro.mjs';
-import { v as validateApiAccess } from '../../../_/validateApiAccess.mjs';
-import 'node:http';
-import 'node:https';
-import 'node:events';
-import 'node:buffer';
-import 'node:fs';
-import 'node:path';
-import 'node:crypto';
-import '../../../_/apiTokens.mjs';
-import 'crypto';
 
-const offices = [
+export const offices = [
   { name: "Innocence", description: "Office of Public Defender", category: "Office of Public Defender" },
   { name: "Self Defense", description: "Office of Public Defender", category: "Office of Public Defender" },
   { name: "Alibi", description: "Office of Public Defender", category: "Office of Public Defender" },
@@ -144,40 +133,4 @@ const offices = [
   { name: "Primacy and Recency", description: "Starting and ending with strong points for maximum impact on the jury.", category: "Cross Examination" },
   { name: "Looping", description: "Technique of incorporating favorable answers into subsequent questions to emphasize key points.", category: "Cross Examination" },
   { name: "Safe Harbor Rule", description: "Always having documentation to support challenging a witness's testimony.", category: "Cross Examination" }
-];
-
-const office = defineEventHandler(async (event) => {
-  validateApiAccess(event, "resources/office");
-  try {
-    const grouped = offices.reduce((acc, office) => {
-      const existing = acc.find((g) => g.label === office.category);
-      if (existing) {
-        existing.data.push({
-          title: office.name,
-          description: office.description
-        });
-      } else {
-        acc.push({
-          label: office.category,
-          data: [
-            {
-              title: office.name,
-              description: office.description
-            }
-          ]
-        });
-      }
-      return acc;
-    }, []);
-    return grouped;
-  } catch (error) {
-    console.error("Error fetching offices:", error);
-    throw createError({
-      statusCode: 500,
-      message: "Failed to fetch offices"
-    });
-  }
-});
-
-export { office as default };
-//# sourceMappingURL=office.mjs.map
+]

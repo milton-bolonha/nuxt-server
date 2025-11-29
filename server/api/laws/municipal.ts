@@ -1,10 +1,10 @@
-import municipalData from "../../data/municipal-laws.json";
+import { municipalLaws } from "../../data/municipal-laws";
 
 export default defineEventHandler(async (event) => {
     validateApiAccess(event, "laws/municipal");
 
     try {
-        const grouped = municipalData.municipalLaws.reduce((acc: any, law) => {
+        const grouped = municipalLaws.reduce((acc: any, law) => {
             const existing = acc.find((g: any) => g.label === law.category);
             if (existing) {
                 existing.data.push({
