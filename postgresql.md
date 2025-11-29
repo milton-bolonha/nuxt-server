@@ -99,6 +99,37 @@ DATABASE_URL = "postgresql://user:password@host:port/database"
 
 ## 🔧 **Passo 5: Reverter APIs para Prisma**
 
+### Abordagem Recomendada: Dados em server/data/
+
+Para evitar problemas de resolução de módulos, copie os dados para `server/data/`:
+
+```bash
+# Criar pasta
+mkdir server/data
+
+# Copiar arquivos de seed
+cp prisma/seeds/*.ts server/data/
+```
+
+### Exemplo: Constitution API
+```typescript:server/api/constitution/constitution.ts
+// ✅ Import funciona dentro de server/
+import { constitutionArticles } from "../data/constitution";
+
+export default defineEventHandler(async (event) => {
+    validateApiAccess(event, 'constitution/constitution')
+
+    return constitutionArticles.map(article => ({
+        title: article.title,
+        description: article.summary,
+        hasArticle: true,
+        key: `article${article.number}`
+    }))
+})
+```
+
+## 🔧 **Passo 5: Reverter APIs para Prisma**
+
 ### Constitution API
 ```typescript:server/api/constitution/constitution.ts
 import prisma from '../../utils/db'
