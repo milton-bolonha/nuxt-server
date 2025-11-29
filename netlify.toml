@@ -18,6 +18,9 @@ NODE_VERSION = "24"
 # Enable Node.js modules
 NODE_OPTIONS = "--max-old-space-size=4096"
 
+# Database URL for SQLite (ponto para o arquivo criado durante o build)
+DATABASE_URL = "file:./prisma/dev.db"
+
 # Netlify Dev (local development)
 [dev]
 framework = "nuxt"
