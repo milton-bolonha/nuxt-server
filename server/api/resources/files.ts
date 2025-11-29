@@ -1,24 +1,19 @@
-import prisma from '../../utils/db'
+import filesData from "../../data/files.json";
 
 export default defineEventHandler(async (event) => {
-    
-    validateApiAccess(event, 'resources/files')
+    validateApiAccess(event, "resources/files");
 
     try {
-        const data = await prisma.file.findMany({
-            orderBy: { title: 'asc' }
-        })
-        
-        return data.map(file => ({
+        return filesData.files.map((file) => ({
             title: file.title,
-            link: file.fileUrl
-        }))
+            link: file.fileUrl,
+        }));
     } catch (error) {
-        console.error('Error fetching files:', error)
+        console.error("Error fetching files:", error);
         throw createError({
             statusCode: 500,
-            message: 'Failed to fetch files'
-        })
+            message: "Failed to fetch files",
+        });
     }
-})
+});
 
