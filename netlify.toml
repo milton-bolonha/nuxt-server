@@ -46,10 +46,6 @@ for = "*.html"
 [headers.values]
 Cache-Control = "public, max-age=0, must-revalidate"
 
-[[headers]]
-for = "/api/*"
-[headers.values]
-Cache-Control = "no-cache, no-store, must-revalidate"
 
 # Redirects (if needed)
 # Uncomment and modify as needed
@@ -75,10 +71,10 @@ status = 200
 force = false
 
 [functions]
-# Nota: Os PDFs são copiados diretamente para .netlify/functions-internal/server/bills/
-# durante o build através do script copy-pdfs.js, então não precisam ser incluídos
-# via included_files (isso causaria duplicação e aumentaria o tamanho do bundle)
-# Os PDFs já estarão disponíveis no diretório da função em runtime
+# Nota: Os PDFs NÃO são incluídos no bundle Lambda para evitar exceder os limites de tamanho.
+# Os PDFs devem ser servidos de um storage externo (S3) configurado via variáveis de ambiente,
+# ou do sistema de arquivos local (apenas para desenvolvimento).
+# Consulte a documentação em server/utils/pdfStorage.ts para configuração do storage externo.
 
 # Environment variables
 # Note: Set actual values in Netlify dashboard under Site settings > Environment variables

@@ -38,3 +38,5 @@ scripts/backups/
 *.db
 *.db-journal
 prisma/migrations/
+# Local Netlify folder
+.netlify

@@ -4,8 +4,8 @@
     "version": "0.7.1",
     "private": true,
     "scripts": {
-        "build": "nuxt build && npm run copy-pdfs",
-        "copy-pdfs": "node scripts/copy-pdfs.js",
+        "build": "nuxt build",
+        "upload-pdfs": "node scripts/upload-pdfs-to-blobs.js",
         "dev": "set NODE_OPTIONS=--dns-result-order=ipv4first && nuxt dev --host 127.0.0.1",
         "generate": "nuxt generate",
         "preview": "nuxt preview",
@@ -23,6 +23,7 @@
         "seed": "tsx prisma/seed.ts"
     },
     "dependencies": {
+        "@netlify/blobs": "^10.4.1",
         "@pinia/nuxt": "^0.11.2",
         "@prisma/client": "^6.18.0",
         "@sentry/vue": "^7.119.0",
@@ -33,9 +34,10 @@
         "@tiptap/starter-kit": "^3.8.0",
         "@tiptap/vue-3": "^3.8.0",
         "@upstash/redis": "^1.35.6",
-        "autoprefixer": "^10.4.22",
         "ably": "^2.14.0",
+        "autoprefixer": "^10.4.22",
         "axios": "^1.13.0",
+        "daisyui": "^5.2.3",
         "dotenv": "^17.2.3",
         "lucide-vue-next": "^0.545.0",
         "noblox.js": "^6.2.0",
@@ -46,7 +48,6 @@
         "tailwindcss": "^4.1.14",
         "vue": "^3.5.22",
         "vue-router": "^4.5.1",
-        "daisyui": "^5.2.3",
         "winston": "^3.18.3"
     },
     "devDependencies": {
