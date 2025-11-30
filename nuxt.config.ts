@@ -21,6 +21,10 @@ export default defineNuxtConfig({
                 baseName: "prisma",
                 dir: "prisma",
             },
+            {
+                baseName: "bills",
+                dir: "server/bills",
+            },
         ],
     },
 

@@ -75,6 +75,9 @@ status = 200
 force = false
 
 [functions]
+# Nota: Os PDFs em server/bills/ são agora gerenciados através de serverAssets
+# no nuxt.config.ts. Esta linha pode ser removida no futuro, mas está mantida
+# como backup para garantir que os arquivos sejam incluídos durante o build.
 included_files = ["server/bills/**"]
 
 # Environment variables
