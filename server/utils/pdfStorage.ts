@@ -67,7 +67,10 @@ class NetlifyBlobsStorageAdapter implements StorageAdapter {
 
     isAvailable(): boolean {
         // Verificar se estamos no Netlify (o Blobs está sempre disponível no Netlify)
-        return !!process.env.NETLIFY
+        // Também verificar se estamos em Lambda (Netlify Functions)
+        const isNetlify = process.env.NETLIFY || process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.NETLIFY_DEV
+        console.log('🔍 [PDF Storage] NetlifyBlobsStorageAdapter.isAvailable():', isNetlify)
+        return !!isNetlify
     }
 
     async getPdf(filePath: string): Promise<Buffer | null> {
@@ -82,12 +85,19 @@ class NetlifyBlobsStorageAdapter implements StorageAdapter {
                 return null
             }
 
+            console.log('🔍 [PDF Storage] Criando store do Netlify Blobs...')
+            console.log('🔍 [PDF Storage] Store name:', this.storeName)
+            console.log('🔍 [PDF Storage] FilePath:', filePath)
+            
             const store = getStore({
                 name: this.storeName,
                 consistency: 'strong' // Para garantir que leituras vejam as últimas escritas
             })
 
+            console.log('✅ [PDF Storage] Store criado, buscando arquivo...')
             const data = await store.get(filePath, { type: 'arrayBuffer' })
+            
+            console.log('🔍 [PDF Storage] Dados obtidos:', data ? `${data.byteLength} bytes` : 'null')
             
             if (!data) {
                 return null
@@ -179,9 +189,18 @@ class S3StorageAdapter implements StorageAdapter {
  * Factory para criar o adaptador de storage apropriado
  */
 function createStorageAdapter(): StorageAdapter {
+    // Debug: verificar variáveis de ambiente
+    console.log('🔍 [PDF Storage] Verificando ambiente...')
+    console.log('🔍 [PDF Storage] NETLIFY:', process.env.NETLIFY)
+    console.log('🔍 [PDF Storage] NODE_ENV:', process.env.NODE_ENV)
+    console.log('🔍 [PDF Storage] AWS_LAMBDA_FUNCTION_NAME:', process.env.AWS_LAMBDA_FUNCTION_NAME)
+    
     // Prioridade 1: Netlify Blobs (nativo do Netlify)
     // O Netlify define automaticamente NETLIFY=true no ambiente de produção
-    if (process.env.NETLIFY) {
+    // Também verificar se estamos em um ambiente Lambda (Netlify Functions)
+    const isNetlify = process.env.NETLIFY || process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.NETLIFY_DEV
+    
+    if (isNetlify) {
         const netlifyBlobsStore = process.env.NETLIFY_BLOBS_STORE_NAME || 'pdfs'
         console.log('📦 [PDF Storage] Usando Netlify Blobs storage:', netlifyBlobsStore)
         return new NetlifyBlobsStorageAdapter(netlifyBlobsStore)
@@ -223,13 +242,21 @@ function getStorageAdapter(): StorageAdapter {
  * Busca um PDF do storage configurado
  */
 export async function getPdfFromStorage(filePath: string): Promise<Buffer | null> {
+    console.log('🔍 [PDF Storage] getPdfFromStorage chamado com filePath:', filePath)
     const adapter = getStorageAdapter()
+    
+    console.log('🔍 [PDF Storage] Adaptador criado:', adapter.constructor.name)
+    console.log('🔍 [PDF Storage] Adaptador disponível?', adapter.isAvailable())
     
     if (!adapter.isAvailable()) {
         console.error('❌ [PDF Storage] Adaptador de storage não disponível')
+        console.error('❌ [PDF Storage] Tipo do adaptador:', adapter.constructor.name)
         return null
     }
 
-    return await adapter.getPdf(filePath)
+    console.log('✅ [PDF Storage] Adaptador disponível, buscando PDF...')
+    const result = await adapter.getPdf(filePath)
+    console.log('🔍 [PDF Storage] Resultado:', result ? `${result.length} bytes` : 'null')
+    return result
 }
 
