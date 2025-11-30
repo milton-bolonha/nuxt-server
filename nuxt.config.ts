@@ -1,5 +1,5 @@
 import tailwindcss from "@tailwindcss/vite";
-import { cpSync } from "node:fs";
+import { cpSync, existsSync } from "node:fs";
 import { join } from "node:path";
 
 export default defineNuxtConfig({
@@ -30,7 +30,6 @@ export default defineNuxtConfig({
             
             try {
                 // Verificar se o diretório source existe
-                const { existsSync } = require("node:fs");
                 if (!existsSync(sourceDir)) {
                     console.error(`❌ [BUILD] Diretório source não existe: ${sourceDir}`);
                     return;
@@ -63,15 +62,14 @@ export default defineNuxtConfig({
             watch: [],
         },
         // Incluir o arquivo SQLite no bundle das functions
+        // Nota: Os PDFs são copiados manualmente via script copy-pdfs.js
+        // para evitar duplicação e controlar melhor o processo
         serverAssets: [
             {
                 baseName: "prisma",
                 dir: "prisma",
             },
-            {
-                baseName: "bills",
-                dir: "server/bills",
-            },
+            // Removido "bills" - os PDFs são copiados manualmente via copy-pdfs.js
         ],
     },
 

@@ -75,9 +75,10 @@ status = 200
 force = false
 
 [functions]
-# Incluir PDFs que foram copiados para .output/server/bills durante o build
-# O script copy-pdfs.js copia os PDFs de server/bills/ para .output/server/bills/
-included_files = [".output/server/bills/**", "server/bills/**"]
+# Nota: Os PDFs são copiados diretamente para .netlify/functions-internal/server/bills/
+# durante o build através do script copy-pdfs.js, então não precisam ser incluídos
+# via included_files (isso causaria duplicação e aumentaria o tamanho do bundle)
+# Os PDFs já estarão disponíveis no diretório da função em runtime
 
 # Environment variables
 # Note: Set actual values in Netlify dashboard under Site settings > Environment variables

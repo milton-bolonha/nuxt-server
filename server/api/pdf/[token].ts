@@ -217,13 +217,16 @@ async function readPdfFromFileSystem(filePath: string): Promise<Buffer | null> {
     // Se estiver no Netlify, tentar caminhos específicos do Lambda
     if (cwd === '/var/task') {
         console.log('🌐 [PDF DEBUG] Detectado ambiente Netlify Lambda (/var/task)')
+        // Os PDFs foram copiados para .netlify/functions-internal/server/bills/ durante o build
+        // No runtime do Lambda, eles devem estar em /var/task/bills/
         possiblePaths.push(
-            join('/var/task', 'bills', filePath),
+            join('/var/task', 'bills', filePath), // Caminho mais provável - onde foram copiados
+            join('/var/task', 'bills', filePath.replace(/^bills\//, '')), // Tentar sem prefixo bills/
             join('/var/task', '.nitro', 'bills', filePath),
             join('/var/task', 'chunks', 'raw', 'bills', filePath),
             join('/var/task', 'server', 'assets', 'bills', filePath),
             join('/var/task', 'assets', 'bills', filePath),
-            // Caminho onde o script copy-pdfs.js pode ter copiado
+            // Caminhos alternativos
             join('/var/task', '.output', 'server', 'bills', filePath),
             join('/var/task', 'output', 'server', 'bills', filePath)
         )
