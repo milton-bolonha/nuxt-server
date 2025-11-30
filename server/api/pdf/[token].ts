@@ -87,6 +87,31 @@ async function readPdfFromStorage(filePath: string): Promise<Buffer | null> {
 }
 
 /**
+ * Lista todos os PDFs encontrados recursivamente
+ */
+async function findAllPDFs(dir: string, depth: number = 0, maxDepth: number = 4, foundPDFs: string[] = []): Promise<string[]> {
+    if (depth > maxDepth) return foundPDFs
+    
+    try {
+        const entries = await fs.readdir(dir, { withFileTypes: true })
+        
+        for (const entry of entries) {
+            const fullPath = join(dir, entry.name)
+            if (entry.isDirectory()) {
+                // Explorar recursivamente
+                await findAllPDFs(fullPath, depth + 1, maxDepth, foundPDFs)
+            } else if (entry.name.endsWith('.pdf')) {
+                foundPDFs.push(fullPath)
+            }
+        }
+    } catch (error: any) {
+        // Ignorar erros de permissão ou diretórios inacessíveis
+    }
+    
+    return foundPDFs
+}
+
+/**
  * Explora a estrutura de diretórios para encontrar onde os arquivos estão
  */
 async function exploreDirectory(dir: string, depth: number = 2, maxDepth: number = 3): Promise<void> {
@@ -96,15 +121,29 @@ async function exploreDirectory(dir: string, depth: number = 2, maxDepth: number
         const entries = await fs.readdir(dir, { withFileTypes: true })
         console.log(`📁 [PDF DEBUG] Conteúdo de ${dir} (${entries.length} itens):`)
         
-        for (const entry of entries.slice(0, 20)) { // Limitar a 20 para não sobrecarregar
+        for (const entry of entries.slice(0, 50)) { // Aumentar limite para ver mais
             const fullPath = join(dir, entry.name)
             if (entry.isDirectory()) {
                 console.log(`  📂 ${entry.name}/`)
-                if (depth < maxDepth && (entry.name.includes('bill') || entry.name.includes('asset') || entry.name.includes('chunk'))) {
-                    await exploreDirectory(fullPath, depth + 1, maxDepth)
+                // Explorar chunks com mais profundidade, especialmente raw
+                // Explorar diretórios interessantes mais profundamente
+                if (depth < maxDepth) {
+                    const shouldExplore = 
+                        entry.name.includes('bill') || 
+                        entry.name.includes('asset') || 
+                        entry.name.includes('chunk') ||
+                        entry.name === 'raw' ||
+                        entry.name === '_' ||
+                        entry.name === 'server' ||
+                        entry.name === 'bills' ||
+                        entry.name === 'prisma';
+                    
+                    if (shouldExplore) {
+                        await exploreDirectory(fullPath, depth + 1, maxDepth)
+                    }
                 }
             } else if (entry.name.endsWith('.pdf')) {
-                console.log(`  📄 ${entry.name} (PDF encontrado!)`)
+                console.log(`  📄 ${entry.name} (PDF encontrado em ${dir}!)`)
             }
         }
     } catch (error: any) {
@@ -131,6 +170,19 @@ async function readPdfFromFileSystem(filePath: string): Promise<Buffer | null> {
     console.log('🔍 [PDF DEBUG] Explorando estrutura de diretórios...')
     try {
         await exploreDirectory(cwd, 1, 3)
+        
+        // Tentar encontrar TODOS os PDFs em /var/task
+        console.log('🔍 [PDF DEBUG] Procurando TODOS os PDFs em /var/task...')
+        const allPDFs = await findAllPDFs(cwd, 0, 5)
+        if (allPDFs.length > 0) {
+            console.log(`✅ [PDF DEBUG] Encontrados ${allPDFs.length} arquivos PDF!`)
+            console.log('📄 [PDF DEBUG] PDFs encontrados:')
+            allPDFs.slice(0, 10).forEach((pdf, idx) => {
+                console.log(`  ${idx + 1}. ${pdf}`)
+            })
+        } else {
+            console.log('❌ [PDF DEBUG] NENHUM PDF encontrado em /var/task')
+        }
     } catch (error: any) {
         console.log('⚠️ [PDF DEBUG] Erro ao explorar diretórios:', error?.message)
     }
