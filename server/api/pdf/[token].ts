@@ -26,6 +26,29 @@ async function readPdfFromStorage(filePath: string): Promise<Buffer | null> {
         console.log('🔍 [PDF DEBUG] Storage path (filePath direto):', filePath)
         console.log('🔍 [PDF DEBUG] Storage mount:', 'assets:bills')
         
+        // Tentar obter informações sobre o storage
+        try {
+            const storageKeys = await storage.getKeys('')
+            console.log('📋 [PDF DEBUG] Storage getKeys() retornou:', storageKeys.length, 'chaves')
+            if (storageKeys.length > 0) {
+                console.log('📋 [PDF DEBUG] Primeiras 10 chaves do storage:', storageKeys.slice(0, 10))
+            }
+        } catch (keysError: any) {
+            console.log('⚠️ [PDF DEBUG] Erro ao obter chaves do storage:', keysError?.message)
+        }
+        
+        // Tentar verificar se o storage tem um método para obter o caminho base
+        try {
+            if (storage && typeof (storage as any).mount === 'function') {
+                console.log('🔍 [PDF DEBUG] Storage tem método mount')
+            }
+            if (storage && typeof (storage as any).base === 'string') {
+                console.log('🔍 [PDF DEBUG] Storage base path:', (storage as any).base)
+            }
+        } catch (infoError: any) {
+            console.log('⚠️ [PDF DEBUG] Não foi possível obter info adicional do storage')
+        }
+        
         // Tentar ler o arquivo do storage usando o filePath completo
         let pdfBuffer = await storage.getItemRaw(filePath)
         
@@ -64,22 +87,83 @@ async function readPdfFromStorage(filePath: string): Promise<Buffer | null> {
 }
 
 /**
+ * Explora a estrutura de diretórios para encontrar onde os arquivos estão
+ */
+async function exploreDirectory(dir: string, depth: number = 2, maxDepth: number = 3): Promise<void> {
+    if (depth > maxDepth) return
+    
+    try {
+        const entries = await fs.readdir(dir, { withFileTypes: true })
+        console.log(`📁 [PDF DEBUG] Conteúdo de ${dir} (${entries.length} itens):`)
+        
+        for (const entry of entries.slice(0, 20)) { // Limitar a 20 para não sobrecarregar
+            const fullPath = join(dir, entry.name)
+            if (entry.isDirectory()) {
+                console.log(`  📂 ${entry.name}/`)
+                if (depth < maxDepth && (entry.name.includes('bill') || entry.name.includes('asset') || entry.name.includes('chunk'))) {
+                    await exploreDirectory(fullPath, depth + 1, maxDepth)
+                }
+            } else if (entry.name.endsWith('.pdf')) {
+                console.log(`  📄 ${entry.name} (PDF encontrado!)`)
+            }
+        }
+    } catch (error: any) {
+        console.log(`  ⚠️ [PDF DEBUG] Erro ao ler diretório ${dir}:`, error?.message)
+    }
+}
+
+/**
  * Tenta ler o PDF do sistema de arquivos (fallback para desenvolvimento)
  */
 async function readPdfFromFileSystem(filePath: string): Promise<Buffer | null> {
     const possiblePaths: string[] = []
-    
-    // Caminho padrão de desenvolvimento
-    possiblePaths.push(join(process.cwd(), 'server', 'bills', filePath))
-    
-    // Caminho absoluto
-    possiblePaths.push(resolve(process.cwd(), 'server', 'bills', filePath))
+    const cwd = process.cwd()
     
     console.log('🔍 [PDF DEBUG] Tentando ler do sistema de arquivos')
-    console.log('🔍 [PDF DEBUG] process.cwd():', process.cwd())
+    console.log('🔍 [PDF DEBUG] process.cwd():', cwd)
+    console.log('🔍 [PDF DEBUG] __dirname:', typeof __dirname !== 'undefined' ? __dirname : 'undefined (ES modules)')
     console.log('🔍 [PDF DEBUG] NODE_ENV:', process.env.NODE_ENV)
     console.log('🔍 [PDF DEBUG] NETLIFY:', process.env.NETLIFY)
     console.log('🔍 [PDF DEBUG] NITRO_PRESET:', process.env.NITRO_PRESET)
+    console.log('🔍 [PDF DEBUG] filePath procurado:', filePath)
+    
+    // Explorar estrutura de diretórios primeiro
+    console.log('🔍 [PDF DEBUG] Explorando estrutura de diretórios...')
+    try {
+        await exploreDirectory(cwd, 1, 3)
+    } catch (error: any) {
+        console.log('⚠️ [PDF DEBUG] Erro ao explorar diretórios:', error?.message)
+    }
+    
+    // Caminhos possíveis baseados no ambiente
+    possiblePaths.push(
+        // Caminho padrão de desenvolvimento
+        join(cwd, 'server', 'bills', filePath),
+        // Caminho absoluto
+        resolve(cwd, 'server', 'bills', filePath),
+        // Netlify: tentar em diferentes locais onde o Nitro pode colocar assets
+        join(cwd, 'bills', filePath),
+        join(cwd, '.nitro', 'bills', filePath),
+        join(cwd, 'chunks', 'raw', 'bills', filePath),
+        join(cwd, 'chunks', 'raw', 'server', 'bills', filePath),
+        // Tentar caminhos relativos à função
+        join(cwd, 'server', 'assets', 'bills', filePath),
+        join(cwd, 'assets', 'bills', filePath),
+        // Tentar diretamente no diretório de trabalho
+        join(cwd, filePath)
+    )
+    
+    // Se estiver no Netlify, tentar caminhos específicos do Lambda
+    if (cwd === '/var/task') {
+        console.log('🌐 [PDF DEBUG] Detectado ambiente Netlify Lambda (/var/task)')
+        possiblePaths.push(
+            join('/var/task', 'bills', filePath),
+            join('/var/task', '.nitro', 'bills', filePath),
+            join('/var/task', 'chunks', 'raw', 'bills', filePath),
+            join('/var/task', 'server', 'assets', 'bills', filePath),
+            join('/var/task', 'assets', 'bills', filePath)
+        )
+    }
     
     for (const path of possiblePaths) {
         try {

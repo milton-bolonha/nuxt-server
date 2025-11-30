@@ -1,4 +1,6 @@
 import tailwindcss from "@tailwindcss/vite";
+import { cpSync } from "node:fs";
+import { join } from "node:path";
 
 export default defineNuxtConfig({
     compatibilityDate: "2025-07-15",
@@ -8,6 +10,26 @@ export default defineNuxtConfig({
     css: ["~/assets/css/main.css"],
     vite: {
         plugins: [tailwindcss()],
+    },
+
+    hooks: {
+        // Hook para copiar os PDFs para o diretório de output do Nitro durante o build
+        // Isso garante que os arquivos estejam disponíveis nas Netlify Functions
+        "nitro:build:after": (nitro) => {
+            console.log("📦 [BUILD] Copiando PDFs para o bundle do Nitro...");
+            
+            const sourceDir = join(process.cwd(), "server", "bills");
+            const targetDir = join(nitro.options.output.serverDir, "bills");
+            
+            try {
+                // Copiar os PDFs para o diretório de output do servidor
+                cpSync(sourceDir, targetDir, { recursive: true });
+                console.log(`✅ [BUILD] PDFs copiados com sucesso de ${sourceDir} para ${targetDir}`);
+            } catch (error: any) {
+                console.error("❌ [BUILD] Erro ao copiar PDFs:", error?.message);
+                // Não lançar erro para não quebrar o build, mas avisar
+            }
+        },
     },
 
     nitro: {
