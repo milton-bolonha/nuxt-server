@@ -75,10 +75,9 @@ status = 200
 force = false
 
 [functions]
-# Nota: Os PDFs em server/bills/ são agora gerenciados através de serverAssets
-# no nuxt.config.ts. Esta linha pode ser removida no futuro, mas está mantida
-# como backup para garantir que os arquivos sejam incluídos durante o build.
-included_files = ["server/bills/**"]
+# Incluir PDFs que foram copiados para .output/server/bills durante o build
+# O script copy-pdfs.js copia os PDFs de server/bills/ para .output/server/bills/
+included_files = [".output/server/bills/**", "server/bills/**"]
 
 # Environment variables
 # Note: Set actual values in Netlify dashboard under Site settings > Environment variables

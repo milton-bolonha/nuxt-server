@@ -4,7 +4,8 @@
     "version": "0.7.1",
     "private": true,
     "scripts": {
-        "build": "nuxt build",
+        "build": "nuxt build && npm run copy-pdfs",
+        "copy-pdfs": "node scripts/copy-pdfs.js",
         "dev": "set NODE_OPTIONS=--dns-result-order=ipv4first && nuxt dev --host 127.0.0.1",
         "generate": "nuxt generate",
         "preview": "nuxt preview",

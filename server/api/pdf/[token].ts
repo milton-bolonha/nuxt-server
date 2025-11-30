@@ -136,11 +136,18 @@ async function exploreDirectory(dir: string, depth: number = 2, maxDepth: number
                         entry.name === '_' ||
                         entry.name === 'server' ||
                         entry.name === 'bills' ||
-                        entry.name === 'prisma';
+                        entry.name === 'prisma' ||
+                        entry.name === 'output';
                     
                     if (shouldExplore) {
                         await exploreDirectory(fullPath, depth + 1, maxDepth)
                     }
+                }
+            
+            // Explorar diretórios raw e asset mais profundamente independente da condição acima
+            } else if (entry.name === 'raw' || entry.name.includes('asset') || entry.name === 'output') {
+                if (depth < maxDepth + 1) {
+                    await exploreDirectory(fullPath, depth + 1, maxDepth + 1)
                 }
             } else if (entry.name.endsWith('.pdf')) {
                 console.log(`  📄 ${entry.name} (PDF encontrado em ${dir}!)`)
@@ -201,6 +208,8 @@ async function readPdfFromFileSystem(filePath: string): Promise<Buffer | null> {
         // Tentar caminhos relativos à função
         join(cwd, 'server', 'assets', 'bills', filePath),
         join(cwd, 'assets', 'bills', filePath),
+        // Caminho onde o script copy-pdfs.js copia os arquivos
+        join(cwd, '.output', 'server', 'bills', filePath),
         // Tentar diretamente no diretório de trabalho
         join(cwd, filePath)
     )
@@ -213,7 +222,10 @@ async function readPdfFromFileSystem(filePath: string): Promise<Buffer | null> {
             join('/var/task', '.nitro', 'bills', filePath),
             join('/var/task', 'chunks', 'raw', 'bills', filePath),
             join('/var/task', 'server', 'assets', 'bills', filePath),
-            join('/var/task', 'assets', 'bills', filePath)
+            join('/var/task', 'assets', 'bills', filePath),
+            // Caminho onde o script copy-pdfs.js pode ter copiado
+            join('/var/task', '.output', 'server', 'bills', filePath),
+            join('/var/task', 'output', 'server', 'bills', filePath)
         )
     }
     
