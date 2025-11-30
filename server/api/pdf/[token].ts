@@ -1,5 +1,5 @@
-import { validatePdfToken } from '~/server/utils/pdfTokens'
-import { getPdfFromStorage } from '~/server/utils/pdfStorage'
+import { validatePdfToken } from '../../utils/pdfTokens'
+import { getPdfFromStorage } from '../../utils/pdfStorage'
 
 export default defineEventHandler(async (event) => {
     const token = getRouterParam(event, 'token')
